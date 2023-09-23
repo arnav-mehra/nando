@@ -2,6 +2,13 @@
     "files.associations": {
         "unordered_map": "cpp",
         "queue": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "algorithm": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xmemory": "cpp",
+        "utility": "cpp",
+        "xstring": "cpp",
+        "functional": "cpp"
     }
 }

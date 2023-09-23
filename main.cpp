@@ -3,18 +3,21 @@
 using namespace std;
 
 int main() {
-    Wiring::set(0, 1, VCC);
-    Wiring::set(1, 1, GND);
-    Wiring::set(2, "000111");
+    Wiring::init("1000");
 
-    IC ic = IC(
-        OP::OR,
-        Wiring::wires[0], Wiring::wires[1],
-        Wiring::wires[2], Wiring::wires[8]
+    GATE g1 = GATE(
+        OP::NOR,
+        0, 1, 2
+    );
+    GATE g2 = GATE(
+        OP::NOR,
+        3, 2, 1
     );
 
-    IC* ic_ptr = &ic;
-    Scheduler::runTimer([ic_ptr]() {
-        ic_ptr->print();
+    GATE* g1_ptr = &g1;
+    GATE* g2_ptr = &g2;
+    Scheduler::runTimer([g1_ptr, g2_ptr]() {
+        g1_ptr->print();
+        g2_ptr->print();
     });
 }

@@ -6,17 +6,16 @@
 enum OP {
     AND,
     OR,
-    NAND
+    NAND,
+    NOR,
+    XOR
 };
 
-struct IC {
+struct GATE {
     OP op;
-    int* vcc;
-    int* gnd;
-    int* ins;
-    int* outs;
+    int in1, in2, out;
 
-    IC(OP op, int& vcc, int& gnd, int& ins, int& outs);
+    GATE(OP op, int in1, int in2, int out);
 
     void run();
     void prop();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ic/index.hpp"
+#include "../gate/index.hpp"
 
 #include <queue>
 #include <unordered_set>
@@ -12,33 +12,35 @@ using namespace std;
 
 namespace Scheduler {
     int T = 0;
-    priority_queue<pair<int, IC*>> pq;
+    priority_queue<pair<int, GATE*>> pq;
 
-    void addIC(IC* ic) {
-        pq.push({ T + 1, ic });
+    void addGate(GATE* gate) {
+        pq.push({ T + 1, gate });
     }
 
-    void runTimerIncrement() {
-        unordered_set<IC*> seen;
-
+    void runTimerIncrement(function<void(void)> fn) {
+        unordered_set<GATE*> seen;
         while (pq.size() && pq.top().first == T) {
-            IC* curr = pq.top().second;
+            GATE* curr = pq.top().second;
             pq.pop();
 
             if (seen.find(curr) != seen.end()) continue;
+            seen.insert(curr);
 
             curr->run();
         }
+        Wiring::apply_updates();
 
+        cout << "T = " << T << '\n';
+        fn();
+
+        Sleep(1000);
         T++;
     }
 
     void runTimer(function<void(void)> fn) {
         while (pq.size()) {
-            cout << "T = " << T << '\n';
-            runTimerIncrement();
-            fn();
-            Sleep(1000);
+            runTimerIncrement(fn);
         }
     }
 };
