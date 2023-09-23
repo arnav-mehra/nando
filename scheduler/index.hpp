@@ -6,13 +6,15 @@
 #include <unordered_set>
 #include <iostream>
 #include <functional>
-#include <windows.h>
+// #include <windows.h>
 
 using namespace std;
 
 namespace Scheduler {
     int T = 0;
-    priority_queue<pair<int, GATE*>> pq;
+
+    typedef pair<int, GATE*> PQ_PAIR; 
+    priority_queue<PQ_PAIR, vector<PQ_PAIR>, greater<PQ_PAIR>> pq;
 
     void addGate(GATE* gate) {
         pq.push({ T + 1, gate });
@@ -20,6 +22,7 @@ namespace Scheduler {
 
     void runTimerIncrement(function<void(void)> fn) {
         unordered_set<GATE*> seen;
+
         while (pq.size() && pq.top().first == T) {
             GATE* curr = pq.top().second;
             pq.pop();
@@ -34,7 +37,7 @@ namespace Scheduler {
         cout << "T = " << T << '\n';
         fn();
 
-        Sleep(1000);
+        // Sleep(1000);
         T++;
     }
 
