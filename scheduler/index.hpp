@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../gate/index.hpp"
+#include "../gate/struct.hpp"
 
 #include <queue>
 #include <unordered_set>
@@ -20,7 +20,7 @@ namespace Scheduler {
         pq.push({ T + 1, gate });
     }
 
-    void runTimerIncrement(function<void(void)> fn) {
+    void runIncrement(function<void(void)> fn) {
         unordered_set<GATE*> seen;
 
         while (pq.size() && pq.top().first == T) {
@@ -34,16 +34,32 @@ namespace Scheduler {
         }
         Wiring::apply_updates();
 
-        cout << "T = " << T << '\n';
-        fn();
-
         // Sleep(1000);
+        cout << "T = " << T << (pq.size() ? "\n" : "-infinity\n");
+        fn();
         T++;
     }
 
-    void runTimer(function<void(void)> fn) {
+    void run(function<void(void)> fn) {
         while (pq.size()) {
-            runTimerIncrement(fn);
+            runIncrement(fn);
+        }
+    }
+
+    void print() {
+        vector<PQ_PAIR> buffer;
+
+        printf("PQ (size %d):\n", pq.size());
+
+        while (pq.size()) {
+            PQ_PAIR p = pq.top();
+            buffer.push_back(p);
+            pq.pop();
+            cout << p.first << ": " << p.second << '\n';
+        }
+
+        for (PQ_PAIR p : buffer) {
+            pq.push(p);
         }
     }
 };

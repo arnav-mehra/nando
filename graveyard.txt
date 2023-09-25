@@ -1,0 +1,90 @@
+// TESTING ADDER:
+
+int main() {
+    for (int i = 0; i < 100; i++) rand();
+    int i1 = Wiring::reserve("xxxx_xxxx");
+    int i2 = Wiring::reserve("xxxx_xxxx");
+    int o  = Wiring::reserve("0000_0000");
+
+    int ins1[8], ins2[8], outs[8];
+    for (int i = 0; i < 8; i++) {
+        ins1[i] = i1 + i;
+        ins2[i] = i2 + i;
+        outs[i] = o + i;
+    }
+
+    ADDER<8> a;
+    a.init(ins1, ins2, outs);
+
+    Wiring::print_usage();
+
+    Scheduler::run([](){});
+
+    Wiring::print(i1, 8);
+    Wiring::print(i2, 8);
+    Wiring::print(o, 8);
+}
+
+// TESTING MUX COMP:
+
+REGISTER<8> reg[4];  // general registers
+REGISTER<8> ireg;    // instruction register
+MUX m1[8];
+MUX m2[8];
+
+int main() {
+    ireg.init("10000000");
+    reg[0].init("00010001");
+    reg[1].init("00100010");
+    reg[2].init("01000100");
+    reg[3].init("10001000");
+
+    int wres = Wiring::reserve(16);
+
+    for (int i = 0; i < 8; i++) {
+        int ins[4] = { 
+            reg[0].get_out(i),
+            reg[1].get_out(i),
+            reg[2].get_out(i),
+            reg[3].get_out(i)
+        };
+        int pin1[2] = {
+            ireg.get_out(0),
+            ireg.get_out(1)
+        };
+        m1[i].init(ins, pin1, wres + i);
+        int pin2[2] = {
+            ireg.get_out(2),
+            ireg.get_out(3)
+        };
+        m2[i].init(ins, pin2, wres + i + 8);
+    }
+
+    Scheduler::run([]() {});
+
+    cout << "INS:\n";
+    for (int i = 0; i < 4; i++) reg[i].print();
+    cout << "PINS:\n";
+    ireg.print();
+    cout << "OUTS:\n";
+    Wiring::print(wres + 8, 8);
+    for (int i = 0; i < 8; i++)
+        m2[i].print();
+}
+
+// TESTING MUX.
+
+// MUX m;
+
+// Wiring::init(0, "1011");
+// int ins[4] = { 0, 1, 2, 3 };
+// Wiring::init(4, "11");
+// int pins[2] = { 4, 5 };
+// int out = Wiring::reserve();
+// m.init(ins, pins, out);
+
+// Scheduler::run([]() {
+//     Wiring::print(0, 4);
+//     Wiring::print(4, 2);
+//     Wiring::print(6, 1);
+// });
