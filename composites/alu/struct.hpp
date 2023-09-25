@@ -7,6 +7,11 @@
 #include "operations/adder/impl.hpp"
 #include "operations/bitwise/impl.hpp"
 
+#include <array>
+#include <string>
+
+using namespace std;
+
 struct ALU {
     REGISTER<8> ireg;   // instruction register. [i1|i2|o1|op]
     REGISTER<8> reg[4]; // general registers
@@ -23,4 +28,5 @@ struct ALU {
 
     ALU();
     void init();
+    void init(string ireg_str, array<string, 4> reg_strs);
 };

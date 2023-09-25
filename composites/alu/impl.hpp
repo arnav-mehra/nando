@@ -4,12 +4,22 @@
 
 #include <iostream>
 #include <string>
+#include <array>
 
 using namespace std;
 
 ALU::ALU() {}
 
 void ALU::init() {
+    init("10001111", { // i1 = 2, i2 = 0, o = 3, op = 3. r[3] = r[2] & r[0];
+        "00010001",
+        "00100010",
+        "01000100",
+        "10001000"
+    });
+}
+
+void ALU::init(string ireg_str, array<string, 4> reg_strs) {
     // init registers each with a enable
 
     int enable = Wiring::reserve(4);
@@ -19,12 +29,11 @@ void ALU::init() {
         ins + 4, ins + 5, ins + 6, ins + 7, 
     };
 
-    // ireg.init("10001111"); // i1 = 2, i2 = 0, o = 3, op = 3. r[3] = r[2] & r[0];
-    ireg.init("00001000"); // r[2] = r[0] + r[0];
-    reg[0].init(enable + 0, ins_arr, string("00010001"));
-    reg[1].init(enable + 1, ins_arr, string("00100010"));
-    reg[2].init(enable + 2, ins_arr, string("01000100"));
-    reg[3].init(enable + 3, ins_arr, string("10001000"));
+    ireg.init(ireg_str);
+    reg[0].init(enable + 0, ins_arr, reg_strs[0]);
+    reg[1].init(enable + 1, ins_arr, reg_strs[1]);
+    reg[2].init(enable + 2, ins_arr, reg_strs[2]);
+    reg[3].init(enable + 3, ins_arr, reg_strs[3]);
 
     // mount mux onto registers for input selection
 
@@ -66,7 +75,7 @@ void ALU::init() {
         }
     }
 
-    // op outputs -> 1 output
+    // op outputs -> 1 output (shared register input)
 
     int outs[8];
     for (int i = 0; i < 8; i++) {
