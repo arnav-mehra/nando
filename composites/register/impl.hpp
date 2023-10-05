@@ -36,7 +36,7 @@ void REGISTER<N_LATCHES>::init(int en, string str) {
 }
 
 template<int N_LATCHES>
-void REGISTER<N_LATCHES>::init(int en, int ins[8], string str) {
+void REGISTER<N_LATCHES>::init(int en, int ins[N_LATCHES], string str) {
     for (int i = 0; i < N_LATCHES; i++) {
         SR_LATCH& latch = latches[i];
         latch.init(en, ins[i]);

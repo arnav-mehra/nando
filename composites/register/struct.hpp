@@ -9,7 +9,7 @@ struct REGISTER {
     REGISTER();
     void init(string str);
     void init(int en, string str);
-    void init(int en, int ins[8], string str);
+    void init(int en, int ins[N_LATCHES], string str);
 
     int get_out(int i);
     int get_in(int i);

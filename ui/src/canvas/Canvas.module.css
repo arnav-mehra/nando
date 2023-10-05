@@ -1,0 +1,30 @@
+.pin {
+    position: absolute;
+    border: 5px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.gate_lable {
+    pointer-events: none;
+    user-select: none;
+}
+
+.gate {
+    position: absolute;
+
+    background: black;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tool_button {
+    position: absolute;
+    width: 40px;
+    color: white;
+    cursor: pointer;
+    opacity: 0.6;
+}

@@ -1,0 +1,104 @@
+#navbar {
+    height: calc(100vh - 60px);
+    width: 300px;
+    padding: 60px 20px 0 20px;
+    z-index: 100;
+    
+    position: fixed;
+    transition: 0.2s;
+
+    background-color: black;
+    color: white;
+}
+
+#navbar_expand_button {
+    z-index: 101;
+    left: 10px;
+    top: 10px;
+    
+    position: fixed;
+    width: 40px;
+    color: white;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+.navbar_heading {
+    font-size: 28px;
+    margin: 20px 0 10px 0;
+}
+
+.navbar_underrule {
+    height: 0.5px;
+    width: 100%;
+    background-color: rgb(61, 61, 61);
+}
+
+.save_button {
+    margin: 10px 0px;
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.save_button:hover {
+    background-color: 'white';
+}
+
+.option_modal {
+    position: absolute;
+    right: -20px;
+    margin-top: 60px;
+    display: flex;
+    transition: 0.2s;
+}
+
+.logo {
+    color: black;
+    background-color: white;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 8px;
+    font-size: 18px;
+    width: fit-content;
+    position: absolute;
+    right: 20px;
+    top: 16px;
+}
+
+#credit_bar {
+    border-radius: 5px;
+    font-size: 12px;
+    width: inherit;
+    position: absolute;
+    text-align: center;
+    bottom: 20px;
+    opacity: 0.2;
+    display: flex;
+}
+
+.credit_dots {
+    width: inherit;
+    margin-top: 6px;
+    border: 1px dashed white;
+    height: 0px;
+}
+
+#credit_text {
+    padding: 0 6px;
+    width: min-content;
+    white-space: nowrap;
+}
+
+#create_circuit_button {
+    background: none;
+    color: white;
+    border: 1px dashed gray;
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
+    margin-top: 10px;
+    cursor: pointer;
+}
