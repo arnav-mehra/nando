@@ -3,7 +3,8 @@ import styles from './Canvas.module.css'
 
 const Tools = ({
     circuit,
-    setCircuit
+    setCircuit,
+    circuitOps
 }) => {
     const [ play, setPlay ] = createSignal(true);
 
@@ -12,29 +13,22 @@ const Tools = ({
             name: 'NAND',
             width: 100,
             height: 50,
-            position: [ 0, 0 ],
+            position: [ 200, 200 ],
             pins: [
                 {
-                    wire: -1,
+                    wires: {},
                     position: [ 0, 15 ]
                 },
                 {
-                    wire: -1,
+                    wires: {},
                     position: [ 0, 35 ]
                 },
                 {
-                    wire: -1,
+                    wires: {},
                     position: [ 100, 25 ]
                 }
             ]
         }
-    }
-
-    const addGate = (gate) => {
-        const copy = { ...circuit() }
-        copy.data.gates = [ ...copy.data.gates, gate ]
-        setCircuit(copy)
-        console.log(copy)
     }
 
     return (
@@ -62,7 +56,7 @@ const Tools = ({
                     top: "12px",
                     right: "60px"
                 }}
-                onClick={() => addGate(gates["NAND"])}
+                onClick={() => circuitOps.addGate("NAND")}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

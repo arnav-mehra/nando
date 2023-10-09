@@ -4,9 +4,11 @@ import styles from './Canvas.module.css'
 const Gate = ({
     gate,
     transform,
-    zoom,
     setPosition,
-    onPinClick
+    onPinClick,
+    selectedPin,
+    isSelected,
+    setSelected
 }) => {
     const [ mouseDown, setMouseDown ] = createSignal(false);
 
@@ -25,56 +27,58 @@ const Gate = ({
     return (
         <>
             <div
-                class={styles.gate}
-                style={{
-                    cursor: mouseDown() ? "grabbing" : "grab",
-                    
-                    "border-radius": `5px ${size()[1]/2}px ${size()[1]/2}px 5px`,
-                    
-                    height: `${size()[1]}px`,
-                    width: `${size()[0]}px`,
-                    left: `${position()[0] - size()[0] / 2}px`,
-                    top: `${position()[1] - size()[1] / 2}px`,
+                onClick={setSelected}
+                onMouseDown={e => {
+                    setMouseDown(true);
+                    e.stopPropagation();
                 }}
-
-                onMouseDown={() => setMouseDown(true)}
-                onMouseUp={() => setMouseDown(false)}
+                onMouseUp={e => {
+                    setMouseDown(false);
+                    e.stopPropagation();
+                }}
                 onMouseMove={e => {
                     if (mouseDown()) {
                         const vcoords = transform.from_coord([ e.pageX, e.pageY ])
                         setPosition(vcoords)
                     }
+                    e.stopPropagation();
+                }}
+
+                class={styles.gate}
+                style={{
+                    cursor: "grab",
+                    "border-radius": `5px ${size()[1]/2}px ${size()[1]/2}px 5px`,
+                    height: `${size()[1]}px`,
+                    width: `${size()[0]}px`,
+                    left: `${position()[0] - size()[0] / 2 - (isSelected() ? 2 : 0)}px`,
+                    top: `${position()[1] - size()[1] / 2 - (isSelected() ? 2 : 0)}px`,
+                    border: isSelected() ? "2px solid white" : "none"
                 }}
             >
-                <div class={styles.gate_lable}>
+                <div class={styles.gate_label}>
                     {gate().name}
                 </div>
 
                 {pin_positions().map((pos, i) => (
-                    <div
-                        // class={styles.pin}
-                        style={{
-                            position: "absolute",
-                            width: "10px",
-                            height: "10px",
-                            "border-radius": "5px",
-                            "background-color": "gray",
-                            left: `${pos[0] - 5}px`,
-                            top: `${pos[1] - 5}px`
-                        }}
-                        onClick={() => onPinClick(i)}
-                    >
+                    <>
                         <div
+                            class={styles.pin}
                             style={{
-                                width: "6px",
-                                height: "6px",
-                                margin: "2px",
-                                "border-radius": "3px",
-                                background: "orange",
-                                "z-index": "200"
+                                top: `${pos[1] - 5}px`,
+                                left: `${pos[0] - 5}px`,
                             }}
+                            onClick={() => onPinClick(i)}
                         />
-                    </div>
+                        {selectedPin() == i &&
+                            <div
+                                class={styles.selected_pin}
+                                style={{
+                                    top: `${pos[1] - 3}px`,
+                                    left: `${pos[0] - 3}px`,
+                                }}
+                            />
+                        }
+                    </>
                 ))}
             </div>
         </>

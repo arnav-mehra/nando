@@ -1,10 +1,13 @@
 import { createMemo } from "solid-js"
+import styles from './Canvas.module.css'
 
 const Wire = ({
     wire,
     transform,
-    circuit
-}) => {  
+    circuit,
+    isSelected,
+    setSelected
+}) => {
     const vec = createMemo(() => {
         const fromGate = circuit().data.gates[wire().from.gate]
         const toGate = circuit().data.gates[wire().to.gate]
@@ -27,7 +30,9 @@ const Wire = ({
             top: (yit + yft) / 2,
             left: (xit + xft) / 2,
             width: len,
-            angle: Math.atan(dy / dx)
+            angle: Math.atan(dy / dx),
+            xit, yit,
+            xft, yft
         };
     })
 
@@ -35,25 +40,32 @@ const Wire = ({
         <>
             <div
                 style={{
+                    cursor: "pointer",
                     position: "absolute",
-                    left: `${vec().left - vec().width / 2}px`,
-                    top: `${vec().top}px`,
+                    left: `${vec().left - vec().width / 2 - (isSelected() ? 1 : 0)}px`,
+                    top: `${vec().top - (isSelected() ? 1 : 0)}px`,
                     width: `${vec().width}px`,
-                    height: `1px`,
+                    height: `2px`,
                     transform: `rotate(${vec().angle}rad)`,
                     "background-color": wire().value ? "red" : "black",
+                    border: isSelected() ? "1px solid white" : "none"
+                }}
+                onClick={setSelected}
+            />
+            <div
+                class={styles.wire_dots}
+                style={{
+                    left: `${vec().xit - 3}px`,
+                    top: `${vec().yit - 3}px`
                 }}
             />
-            {/* <div
+            <div
+                class={styles.wire_dots}
                 style={{
-                    position: "absolute",
-                    left: `${vec().left - 2.5}px`,
-                    top: `${vec().top - 2.5}px`,
-                    width: `5px`,
-                    height: `5px`,
-                    "background-color": "green",
+                    left: `${vec().xft - 3}px`,
+                    top: `${vec().yft - 3}px`
                 }}
-            /> */}
+            />
         </>
     )
 }

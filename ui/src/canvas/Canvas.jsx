@@ -1,18 +1,24 @@
 import { For, createMemo, createSignal } from 'solid-js';
 import Gate from './Gate';
 import Wire from './Wire';
+import { feed_wasm, init_wasm } from '../storage/conversion';
 
 const Canvas = ({
     circuit,
-    setCircuit
+    setCircuit,
+    circuitOps
 }) => {
     const [ center, setCenter ] = createSignal([ 0, 0 ]);
     const [ zoom, setZoom ] = createSignal(1);
+
     const [ mouseDown, setMouseDown ] = createSignal(false);
-    const [ wireStart, setWireStart ] = createSignal(null);
     
-    const gates = createMemo(() => circuit().data.gates)
-    const wires = createMemo(() => circuit().data.wires)
+    const [ selectedPin, setSelectedPin ] = createSignal(null);
+    const [ selectedGate, setSelectedGate ] = createSignal(-1);
+    const [ selectedWire, setSelectedWire ] = createSignal(-1);
+
+    const gates = createMemo(() => circuit().data.gates);
+    const wires = createMemo(() => circuit().data.wires);
 
     const transform = {
         to_delta: ([ dx, dy ]) => {
@@ -30,85 +36,128 @@ const Canvas = ({
             const ny = (y - center()[1]) / zoom();
             return [ nx, ny ];
         }
-    }
+    };
 
     const onPinClick = (gate, pin) => {
         // select wire
-        if (!wireStart()) {
-            setWireStart({ gate, pin });
+        if (!selectedPin()) {
+            setSelectedPin({ gate, pin });
             return;
         }
 
-        const newWire = {
-            from: wireStart(),
-            to: { gate, pin },
-            value: 0
-        }
-        const fromPin = gates()[wireStart().gate].pins[wireStart().pin]
-        const toPin = gates()[gate].pins[pin]
-
         // wire already exists, reset
-        const to_from_same = gate == wireStart().gate && pin == wireStart().pin
-        const to_from_dup = fromPin.wire != -1 && fromPin.wire == toPin.wire
-        if (to_from_same || to_from_dup) {
-            setWireStart(null);
+        const same_pin = gate == selectedPin().gate && pin == selectedPin().pin
+        const out_to_out = selectedPin().pin == 2 && pin == 2
+        
+        if (!same_pin && out_to_out) {
+            alert("You cannot connect outputs to each other.");
+        }
+        if (same_pin || out_to_out) {
+            setSelectedPin(null);
             return;
         }
         
         // create new wire & reset
-        const copy = { ...circuit() }
-        copy.data.wires = [ ...copy.data.wires, newWire ]
-        const newWireNum = copy.data.wires.length - 1;
-        fromPin.wire = newWireNum;
-        toPin.wire = newWireNum;
-        setCircuit(copy)
-        setWireStart(null);
+        circuitOps.addWire({
+            from: selectedPin(),
+            to: { gate, pin },
+            value: 0
+        })
+        setSelectedPin(null);
+    };
+
+    const onKeyPress = (key) => {
+        console.log({key});
+
+        switch (key) {
+            case 'd': { // delete
+                if (selectedGate() != -1) {
+                    circuitOps.deleteGate(selectedGate());
+                    setSelectedGate(-1);
+                }
+                if (selectedWire() != -1) {
+                    circuitOps.deleteWire(selectedWire());
+                    setSelectedWire(-1);
+                }
+                break;
+            }
+            case 'p': { // play/pause
+                console.log(init_wasm(circuit().data.gates))
+                console.log(feed_wasm(circuit().data.wires))
+                break;
+            }
+            case 's': { // save
+                break;
+            }
+            case 'i': { // info
+                console.log(circuit());
+                break;
+            }
+        }
     }
 
     return (
         <div
-            // onMouseDown={_ => setMouseDown(true)}
-            // onMouseUp={_ => setMouseDown(false)}
-            // onMouseMove={e => {
-            //     if (mouseDown()) {
-            //         const [ x, y ] = center();
-            //         setCenter([
-            //             x + e.movementX,
-            //             y + e.movementY
-            //         ])
-            //     }
-            // }}
-            // onWheel={e => {
-            //     const d = e.deltaY;
-            //     const nz = zoom() + (d / 1000);
-            //     setZoom(nz)
-            // }}
+            tabIndex={0}
+            onKeyPress={e => onKeyPress(e.key)}
+            onMouseDown={_ => setMouseDown(true)}
+            onMouseUp={_ => setMouseDown(false)}
+            onMouseMove={e => {
+                if (mouseDown()) {
+                    const [ x, y ] = center();
+                    setCenter([
+                        x + e.movementX,
+                        y + e.movementY
+                    ])
+                }
+            }}
+            onWheel={e => {
+                const d = e.deltaY;
+                const nz = zoom() + (d / 1000);
+                setZoom(nz)
+            }}
 
             style={{
                 height: "100vh",
                 width: "100vw",
                 overflow: "hidden",
-                cursor: mouseDown() ? "grabbing" : "grab"
+                cursor: "grab"
             }}
         >
             <For each={gates()}>
                 {(g, i) => {
                     const gate = createMemo(() => circuit().data.gates[i()])
+                    const relSelectedPin = createMemo(() => (i() == selectedPin()?.gate) ? selectedPin().pin : -1)
+                    const isSelected = createMemo(() => selectedGate() == i())
+                    const setSelected = () => {
+                        setSelectedGate(isSelected() ? -1 : i())
+                        if (isSelected()) {
+                            setSelectedWire(-1);
+                        }
+                    }
+
                     return (
-                        <Gate
-                            gate={gate}
-                            transform={transform}
-                            zoom={zoom}
-                            setPosition={(pos) => {
-                                const copy = { ...circuit() }
-                                copy.data.gates[i()] = {
-                                    ...copy.data.gates[i()],
-                                    position: pos
-                                }
-                                setCircuit(copy)
-                            }}
-                            onPinClick={(pin) => onPinClick(i(), pin)}
-                        />
+                        <>
+                            {gate() &&
+                                <Gate
+                                    gate={gate}
+                                    transform={transform}
+                                    zoom={zoom}
+                                    setPosition={(pos) => {
+                                        const copy = { ...circuit() }
+                                        copy.data.gates[i()] = {
+                                            ...copy.data.gates[i()],
+                                            position: pos
+                                        }
+                                        setCircuit(copy)
+                                    }}
+                                    onPinClick={(pin) => onPinClick(i(), pin)}
+                                    selectedPin={relSelectedPin}
+                                    isSelected={isSelected}
+                                    setSelected={setSelected}
+                                />
+                            }
+                        </>
                     )
                 }}
             </For>
@@ -116,17 +165,32 @@ const Canvas = ({
             <For each={wires()}>
                 {(w, i) => {
                     const wire = createMemo(() => circuit().data.wires[i()])
+                    const isSelected = createMemo(() => selectedWire() == i())
+                    const setSelected = () => {
+                        setSelectedWire(isSelected() ? -1 : i())
+                        if (isSelected()) {
+                            setSelectedGate(-1);
+                        }
+                    }
+
                     return (
-                        <Wire
-                            wire={wire}
-                            transform={transform}
-                            circuit={circuit}
-                        />
+                        <>
+                            {wire() &&
+                                <Wire
+                                    wire={wire}
+                                    transform={transform}
+                                    circuit={circuit}
+                                    isSelected={isSelected}
+                                    setSelected={setSelected}
+                                />
+                            }
+                        </>
+                        
                     )
                 }}
             </For>
         </div>
-    )
-}
+    );
+};
 
-export default Canvas
+export default Canvas;
