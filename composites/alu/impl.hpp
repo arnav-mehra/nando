@@ -8,32 +8,38 @@
 
 using namespace std;
 
-ALU::ALU() {}
+template<int N_BITS, int N_REGS>
+ALU<N_BITS, N_REGS>::ALU() {}
 
-void ALU::init() {
-    init("10001111", { // i1 = 2, i2 = 0, o = 3, op = 3. r[3] = r[2] & r[0];
-        "00010001",
-        "00100010",
-        "01000100",
-        "10001000"
-    });
+template<int N_BITS, int N_REGS>
+void ALU<N_BITS, N_REGS>::init() {
+    init(
+        "10001111",
+        { // i1 = 2, i2 = 0, o = 3, op = 3. r[3] = r[2] & r[0];
+            "00010001",
+            "00100010",
+            "01000100",
+            "10001000"
+        }
+    );
 }
 
-void ALU::init(string ireg_str, array<string, 4> reg_strs) {
+template<int N_BITS, int N_REGS>
+void ALU<N_BITS, N_REGS>::init(string ireg_str, array<string, N_REGS> reg_strs) {
     // init registers each with a enable
 
-    int enable = Wiring::reserve(4);
-    int ins = Wiring::reserve(8);
-    int ins_arr[8] = {
-        ins + 0, ins + 1, ins + 2, ins + 3,
-        ins + 4, ins + 5, ins + 6, ins + 7, 
+    int enable = Wiring::reserve(N_REGS);
+    int ins = Wiring::reserve(N_BITS);
+    
+    int ins_arr[N_BITS];
+    for (int i = 0; i < N_BITS; i++) {
+        ins_arr[i] = ins + i;
     };
 
     ireg.init(ireg_str);
-    reg[0].init(enable + 0, ins_arr, reg_strs[0]);
-    reg[1].init(enable + 1, ins_arr, reg_strs[1]);
-    reg[2].init(enable + 2, ins_arr, reg_strs[2]);
-    reg[3].init(enable + 3, ins_arr, reg_strs[3]);
+    for (int r = 0; r < N_REGS; r++) {
+        reg[r].init(enable + r, ins_arr, reg_strs[r]);
+    }
 
     // mount mux onto registers for input selection
 
@@ -45,21 +51,19 @@ void ALU::init(string ireg_str, array<string, 4> reg_strs) {
         ireg.get_out(2),
         ireg.get_out(3)
     };
-    for (int i = 0; i < 8; i++) {
-        int ins[4] = { 
-            reg[0].get_out(i),
-            reg[1].get_out(i),
-            reg[2].get_out(i),
-            reg[3].get_out(i)
-        };
+    for (int i = 0; i < N_BITS; i++) {
+        int ins[N_REGS];
+        for (int r = 0; r < N_REGS; r++) { 
+            ins[r] = reg[r].get_out(i);
+        }
         m[0][i].init(ins, pin1);
         m[1][i].init(ins, pin2);
     }
 
     // prep io wires
 
-    int ins1[8], ins2[8];
-    for (int i = 0; i < 8; i++) {
+    int ins1[N_BITS], ins2[N_BITS];
+    for (int i = 0; i < N_BITS; i++) {
         ins1[i] = m[0][i].get_out();
         ins2[i] = m[1][i].get_out();
     }
@@ -77,8 +81,8 @@ void ALU::init(string ireg_str, array<string, 4> reg_strs) {
 
     // op outputs -> 1 output (shared register input)
 
-    int outs[8];
-    for (int i = 0; i < 8; i++) {
+    int outs[N_BITS];
+    for (int i = 0; i < N_BITS; i++) {
         int ins[4] = { 
             adder.get_out(i),
             bw_nand.get_out(i),
@@ -104,8 +108,8 @@ void ALU::init(string ireg_str, array<string, 4> reg_strs) {
 
     // mount enable logic
 
-    for (int i = 0; i < 4; i++) {
-        REGISTER<8>& r = reg[i];
+    for (int i = 0; i < N_REGS; i++) {
+        REGISTER<N_BITS>& r = reg[i];
         int is_sel = dm_op.get_out(i);
         enable_gates[i].init(OP::AND, is_sel, is_sel, enable + i);
     }
