@@ -71,13 +71,16 @@ const Canvas = ({
 
         switch (key) {
             case 'd': { // delete
-                if (selectedGate() != -1) {
-                    circuitOps.deleteGate(selectedGate());
-                    setSelectedGate(-1);
+                const selGate = selectedGate()
+                const selWire = selectedWire()
+                setSelectedGate(-1)
+                setSelectedWire(-1)
+
+                if (selGate != -1) {
+                    circuitOps.deleteGate(selGate);
                 }
-                if (selectedWire() != -1) {
-                    circuitOps.deleteWire(selectedWire());
-                    setSelectedWire(-1);
+                else if (selWire != -1) {
+                    circuitOps.deleteWire(selWire);
                 }
                 break;
             }

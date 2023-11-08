@@ -1,34 +1,36 @@
-import { createEffect, createSignal } from 'solid-js';
+import { createEffect, createSignal, onMount } from 'solid-js';
 import styles from './App.module.css';
 import Navbar from './nav/Navbar';
 import Canvas from './canvas/Canvas';
 import Tools from './canvas/Tools';
+import Notifs from './Notifs';
+
+const GATE_DATA = {
+  "NAND": {
+    name: 'NAND',
+    width: 100,
+    height: 50,
+    position: [ 200, 200 ],
+    pins: [
+      {
+        wires: {},
+        position: [ 0, 15 ]
+      },
+      {
+        wires: {},
+        position: [ 0, 35 ]
+      },
+      {
+        wires: {},
+        position: [ 100, 25 ]
+      }
+    ]
+  }
+}
 
 function App() {
   const [ circuit, setCircuit ] = createSignal(null);
-
-  const gates = {
-    "NAND": {
-      name: 'NAND',
-      width: 100,
-      height: 50,
-      position: [ 200, 200 ],
-      pins: [
-        {
-          wires: {},
-          position: [ 0, 15 ]
-        },
-        {
-          wires: {},
-          position: [ 0, 35 ]
-        },
-        {
-          wires: {},
-          position: [ 100, 25 ]
-        }
-      ]
-    }
-  }
+  const [ notifQueue, setNotifQueue ] = createSignal([]);
 
   const circuitOps = {
     deleteWire: (w) => {
@@ -51,21 +53,20 @@ function App() {
     },
     deleteGate: (g) => {
       const copy = { ...circuit() }
+      console.log(copy)
+      console.log(g)
 
-      const pins = gates()[g].pins
+      const pins = copy.data.gates[g].pins
       pins.forEach(pin => {
         Object.keys(pin.wires).forEach(w => {
           copy.data.wires[w] = null
         })
       })
       copy.data.gates[g] = null
-
-      setSelectedGate(-1)
-      setSelectedWire(-1)
       setCircuit(copy)
     },
     addGate: (gateName) => {
-      const gate = JSON.parse(JSON.stringify(gates[gateName]))        
+      const gate = JSON.parse(JSON.stringify(GATE_DATA[gateName]))        
       const copy = { ...circuit() }
       copy.data.gates = [ ...copy.data.gates, gate ]
       setCircuit(copy)
@@ -83,6 +84,14 @@ function App() {
       setCircuit(copy)
     }
   }
+
+  const pushNotif = (text) => {
+    const q = notifQueue();
+    const newNotif = { text };
+    setNotifQueue([ ...q, newNotif ]);
+  }
+
+  onMount(() => pushNotif('hi'))
 
   return (
     <div class={styles.App}>
@@ -103,6 +112,10 @@ function App() {
           />
         </>
       }
+      <Notifs
+        notifQueue={notifQueue}
+        setNotifQueue={setNotifQueue}
+      />
     </div>
   );
 }

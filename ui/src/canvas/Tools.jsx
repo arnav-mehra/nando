@@ -8,29 +8,6 @@ const Tools = ({
 }) => {
     const [ play, setPlay ] = createSignal(true);
 
-    const gates = {
-        "NAND": {
-            name: 'NAND',
-            width: 100,
-            height: 50,
-            position: [ 200, 200 ],
-            pins: [
-                {
-                    wires: {},
-                    position: [ 0, 15 ]
-                },
-                {
-                    wires: {},
-                    position: [ 0, 35 ]
-                },
-                {
-                    wires: {},
-                    position: [ 100, 25 ]
-                }
-            ]
-        }
-    }
-
     return (
         <>
             <div
