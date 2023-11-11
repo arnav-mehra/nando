@@ -4,6 +4,7 @@ import Navbar from './nav/Navbar';
 import Canvas from './canvas/Canvas';
 import Tools from './canvas/Tools';
 import Notifs from './Notifs';
+import { saveLocalCircuit } from './storage/local';
 
 const GATE_DATA = {
   "NAND": {
@@ -46,9 +47,6 @@ function App() {
       delete fromPin.wires[w]
       delete toPin.wires[w]
       copy.data.wires[w] = null
-
-      setSelectedGate(-1)
-      setSelectedWire(-1)
       setCircuit(copy)
     },
     deleteGate: (g) => {
@@ -82,6 +80,15 @@ function App() {
       fromPin.wires[newWireNum] = 1;
       toPin.wires[newWireNum] = 1;
       setCircuit(copy)
+    },
+    save: () => {
+      try {
+        saveLocalCircuit(circuit());
+        pushNotif("Saved circuit " + circuit().meta.name + "!");
+      } catch (err) {
+        pushNotif("Error: Unable to save circuit.");
+        console.log({ err });
+      }
     }
   }
 
@@ -90,8 +97,6 @@ function App() {
     const newNotif = { text };
     setNotifQueue([ ...q, newNotif ]);
   }
-
-  onMount(() => pushNotif('hi'))
 
   return (
     <div class={styles.App}>

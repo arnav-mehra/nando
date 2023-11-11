@@ -90,6 +90,7 @@ const Canvas = ({
                 break;
             }
             case 's': { // save
+                circuitOps.save();
                 break;
             }
             case 'i': { // info
