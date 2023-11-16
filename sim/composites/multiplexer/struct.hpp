@@ -3,6 +3,7 @@
 #include "../../gate/struct.hpp"
 #include "../../wire/index.hpp"
 
+template<int N_SELECT>
 struct MUX {
     GATE g[13];
 
@@ -14,6 +15,7 @@ struct MUX {
     void print();
 };
 
+template<int N_SELECT>
 struct DEMUX {
     GATE g[6];
 

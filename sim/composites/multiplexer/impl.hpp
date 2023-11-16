@@ -2,9 +2,11 @@
 
 #include "struct.hpp"
 
-MUX::MUX() {}
+template<int N_SELECT>
+MUX<N_SELECT>::MUX() {}
 
-void MUX::init(int i[4], int p[2], int o) {
+template<int N_SELECT>
+void MUX<N_SELECT>::init(int i[4], int p[2], int o) {
     int np = Wiring::reserve(2);
     g[0].init(OP::NAND, p[0], p[0], np + 0);
     g[1].init(OP::NAND, p[1], p[1], np + 1);
@@ -30,16 +32,19 @@ void MUX::init(int i[4], int p[2], int o) {
     g[12].init(OP::OR, t + 0, t + 1, o);
 }
 
-void MUX::init(int i[4], int p[2]) {
+template<int N_SELECT>
+void MUX<N_SELECT>::init(int i[4], int p[2]) {
     int o = Wiring::reserve();
     init(i, p, o);
 }
 
-int MUX::get_out() {
+template<int N_SELECT>
+int MUX<N_SELECT>::get_out() {
     return g[12].out;
 }
 
-void MUX::print() {
+template<int N_SELECT>
+void MUX<N_SELECT>::print() {
     printf("    _____  \n");
     printf(" %d-|     |\n",     Wiring::get(g[6].in[0]));
     printf(" %d-| MUX |- %d\n", Wiring::get(g[7].in[0]), Wiring::get(g[12].out));
@@ -48,9 +53,11 @@ void MUX::print() {
     printf("     %d %d \n",     Wiring::get(g[0].in[0]), Wiring::get(g[1].in[0]));
 }
 
-DEMUX::DEMUX() {}
+template<int N_SELECT>
+DEMUX<N_SELECT>::DEMUX() {}
 
-void DEMUX::init(int i[2]) {
+template<int N_SELECT>
+void DEMUX<N_SELECT>::init(int i[2]) {
     int niw = Wiring::reserve(2);
     int ni[2] = { niw, niw + 1 };
     g[0].init(OP::NAND, i[0], i[0], ni[0]);
@@ -63,11 +70,13 @@ void DEMUX::init(int i[2]) {
     g[5].init(OP::AND,  i[0],  i[1], o + 3);
 }
 
-int DEMUX::get_out(int i) {
+template<int N_SELECT>
+int DEMUX<N_SELECT>::get_out(int i) {
     return g[i + 2].out;
 }
 
-void DEMUX::print() {
+template<int N_SELECT>
+void DEMUX<N_SELECT>::print() {
     printf(" _____    \n");
     printf("|     |-%d\n", Wiring::get(g[2].out));
     printf("|DEMUX|-%d\n", Wiring::get(g[3].out));

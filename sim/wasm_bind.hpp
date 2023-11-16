@@ -44,6 +44,3 @@ namespace WasmSim {
         return Wiring::to_string();
     }
 };
-
-int main() {
-}

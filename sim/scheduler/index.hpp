@@ -16,6 +16,13 @@ namespace Scheduler {
     struct PQ_ENTRY {
         int time;
         GATE* gate;
+
+        bool operator>(PQ_ENTRY b) {
+            return this->time < b.time;
+        }
+        bool operator<(PQ_ENTRY b) {
+            return this->time > b.time;
+        }
     };
     PQ_ENTRY pq_arr[1000];
     PQ_ENTRY* pq = pq_arr;
@@ -28,23 +35,31 @@ namespace Scheduler {
     }
 
     PQ_ENTRY* pq_end() {
-        return &pq[pq_size - 1];
+        return &pq[pq_size];
     }
 
     void push_pq(GATE* gate, int delta) {
         pq[pq_size++] = { T + delta, gate };
-        push_heap(pq_begin(), pq_end(), greater<PQ_ENTRY>());
+        push_heap(pq_begin(), pq_end());
     }
 
     PQ_ENTRY pop_pq() {
         PQ_ENTRY p = *pq_begin();
-        pop_heap(pq_begin(), pq_end(), greater<PQ_ENTRY>());
+        pop_heap(pq_begin(), pq_end());
         pq_size--;
         return p;
     }
 
     void clear() {
         pq_size = 0;
+    }
+
+    void print() {
+        printf("PQ (size %d):\n", pq_size);
+
+        for (int i = 0; i < pq_size; i++) {
+            cout << pq[i].time << ": " << pq[i].gate << '\n';
+        }
     }
 
     // Circuit Runner
@@ -71,14 +86,6 @@ namespace Scheduler {
     void run(function<void(void)> fn) {
         while (pq_size) {
             runIncrement(fn);
-        }
-    }
-
-    void print() {
-        printf("PQ (size %d):\n", pq_size);
-
-        for (int i = 0; i < pq_size; i++) {
-            cout << pq[i].time << ": " << pq[i].gate << '\n';
         }
     }
 };
