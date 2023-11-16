@@ -29,11 +29,11 @@ void SR_LATCH::init() {
 }
 
 int SR_LATCH::get_en() {
-    return g[1].in1;
+    return g[1].in[0];
 }
 
 int SR_LATCH::get_in() {
-    return g[0].in1;
+    return g[0].in[0];
 }
 
 int SR_LATCH::get_out(int i) {
@@ -42,12 +42,12 @@ int SR_LATCH::get_out(int i) {
 
 void SR_LATCH::print() {
     printf( "    ______        \n");
-    printf("%d --\\     \\o- %d\n", Wiring::get(g[0].in1), Wiring::get(g[0].out));
-    printf("%d --/_____/ |  \n", Wiring::get(g[0].in2)); 
+    printf("%d --\\     \\o- %d\n", Wiring::get(g[0].in[0]), Wiring::get(g[0].out));
+    printf("%d --/_____/ |  \n", Wiring::get(g[0].in[1])); 
     printf( "   |____    |    \n");
     printf( "    ____|___|     \n");
     printf( "   |    |___      \n");
     printf( "   |______  |     \n");
-    printf("%d --\\     \\o- %d\n", Wiring::get(g[1].in2), Wiring::get(g[1].out));
-    printf("%d --/_____/     \n\n", Wiring::get(g[1].in1));  
+    printf("%d --\\     \\o- %d\n", Wiring::get(g[1].in[1]), Wiring::get(g[1].out));
+    printf("%d --/_____/     \n\n", Wiring::get(g[1].in[0]));  
 }

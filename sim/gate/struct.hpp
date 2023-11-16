@@ -12,7 +12,8 @@ enum OP {
 
 struct GATE {
     OP op;
-    int in1, in2, out;
+    int in[2];
+    int out;
 
     GATE() {}
     void init(OP op, int in1, int in2, int out);

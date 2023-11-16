@@ -41,11 +41,11 @@ int MUX::get_out() {
 
 void MUX::print() {
     printf("    _____  \n");
-    printf(" %d-|     |\n",     Wiring::get(g[6].in1));
-    printf(" %d-| MUX |- %d\n", Wiring::get(g[7].in1), Wiring::get(g[12].out));
-    printf(" %d-|     |\n",     Wiring::get(g[8].in1));
-    printf(" %d-|_v_v_|\n",     Wiring::get(g[9].in1));
-    printf("     %d %d \n",     Wiring::get(g[0].in1), Wiring::get(g[1].in1));
+    printf(" %d-|     |\n",     Wiring::get(g[6].in[0]));
+    printf(" %d-| MUX |- %d\n", Wiring::get(g[7].in[0]), Wiring::get(g[12].out));
+    printf(" %d-|     |\n",     Wiring::get(g[8].in[0]));
+    printf(" %d-|_v_v_|\n",     Wiring::get(g[9].in[0]));
+    printf("     %d %d \n",     Wiring::get(g[0].in[0]), Wiring::get(g[1].in[0]));
 }
 
 DEMUX::DEMUX() {}
@@ -73,5 +73,5 @@ void DEMUX::print() {
     printf("|DEMUX|-%d\n", Wiring::get(g[3].out));
     printf("|     |-%d\n", Wiring::get(g[4].out));
     printf("|_v_v_|-%d\n", Wiring::get(g[5].out));
-    printf("  %d %d   \n", Wiring::get(g[0].in1), Wiring::get(g[1].in1));
+    printf("  %d %d   \n", Wiring::get(g[0].in[0]), Wiring::get(g[1].in[0]));
 }

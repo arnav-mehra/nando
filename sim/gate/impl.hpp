@@ -10,36 +10,36 @@ using namespace std;
 
 void GATE::init(OP op, int in1, int in2, int out) {
     this->op = op;
-    this->in1 = in1;
-    this->in2 = in2;
+    this->in[0] = in1;
+    this->in[1] = in2;
     this->out = out;
 
     Wiring::plugs[in1].push_back(this);
     Wiring::plugs[in2].push_back(this);
 
-    Scheduler::addGate(this);
+    Scheduler::push_pq(this, 1);
 }
 
 void GATE::run() {
     switch (op) {
         case OP::AND: {
-            Wiring::set(out, Wiring::get(in1) & Wiring::get(in2));
+            Wiring::set(out, Wiring::get(in[0]) & Wiring::get(in[1]));
             break;
         }
         case OP::OR: {
-            Wiring::set(out, Wiring::get(in1) | Wiring::get(in2));
+            Wiring::set(out, Wiring::get(in[0]) | Wiring::get(in[1]));
             break;
         }
         case OP::XOR: {
-            Wiring::set(out, Wiring::get(in1) ^ Wiring::get(in2));
+            Wiring::set(out, Wiring::get(in[0]) ^ Wiring::get(in[1]));
             break;
         }
         case OP::NAND: {
-            Wiring::set(out, !(Wiring::get(in1) & Wiring::get(in2)));
+            Wiring::set(out, !(Wiring::get(in[0]) & Wiring::get(in[1])));
             break;
         }
         case OP::NOR: {
-            Wiring::set(out, !(Wiring::get(in1) | Wiring::get(in2)));
+            Wiring::set(out, !(Wiring::get(in[0]) | Wiring::get(in[1])));
             break;
         }
     }
@@ -52,7 +52,7 @@ void GATE::run() {
 
 void GATE::prop() {
     for (GATE* gate : Wiring::plugs[out]) {
-        Scheduler::addGate(gate);
+        Scheduler::push_pq(gate, 1);
     }
 }
 
@@ -60,32 +60,32 @@ void GATE::print() {
     switch (op) {
         case OP::AND: {
             printf( "     _____       \n");
-            printf("%d --|     \\-- %d\n", Wiring::get(in1), Wiring::get(out));
-            printf("%d --|_____/    \n\n", Wiring::get(in2));
+            printf("%d --|     \\-- %d\n", Wiring::get(in[0]), Wiring::get(out));
+            printf("%d --|_____/    \n\n", Wiring::get(in[1]));
             return;
         }
         case OP::OR: {
             printf( "    ______        \n");
-            printf("%d --\\     \\-- %d\n", Wiring::get(in1), Wiring::get(out));
-            printf("%d --/_____/     \n\n", Wiring::get(in2));
+            printf("%d --\\     \\-- %d\n", Wiring::get(in[0]), Wiring::get(out));
+            printf("%d --/_____/     \n\n", Wiring::get(in[1]));
             return;
         }
         case OP::NAND: {
             printf( "     _____       \n");
-            printf("%d --|     \\o- %d\n", Wiring::get(in1), Wiring::get(out));
-            printf("%d --|_____/    \n\n", Wiring::get(in2));
+            printf("%d --|     \\o- %d\n", Wiring::get(in[0]), Wiring::get(out));
+            printf("%d --|_____/    \n\n", Wiring::get(in[1]));
             return;
         }
         case OP::NOR: {
             printf( "    ______        \n");
-            printf("%d --\\     \\o- %d\n", Wiring::get(in1), Wiring::get(out));
-            printf("%d --/_____/     \n\n", Wiring::get(in2));
+            printf("%d --\\     \\o- %d\n", Wiring::get(in[0]), Wiring::get(out));
+            printf("%d --/_____/     \n\n", Wiring::get(in[1]));
             return;
         }
         case OP::XOR: {
             printf( "     ______       \n");
-            printf("%d --\\\\     \\__ %d\n", Wiring::get(in1), Wiring::get(out));
-            printf("%d --//_____/    \n\n", Wiring::get(in2));
+            printf("%d --\\\\     \\__ %d\n", Wiring::get(in[0]), Wiring::get(out));
+            printf("%d --//_____/    \n\n", Wiring::get(in[1]));
             return;
         }
     }

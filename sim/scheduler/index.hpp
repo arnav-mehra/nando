@@ -13,57 +13,72 @@ using namespace std;
 namespace Scheduler {
     int T = 0;
 
-    typedef pair<int, GATE*> PQ_PAIR; 
-    priority_queue<PQ_PAIR, vector<PQ_PAIR>, greater<PQ_PAIR>> pq;
+    struct PQ_ENTRY {
+        int time;
+        GATE* gate;
+    };
+    PQ_ENTRY pq_arr[1000];
+    PQ_ENTRY* pq = pq_arr;
+    int pq_size = 0;
+
+    // PQ Operations
+
+    PQ_ENTRY* pq_begin() {
+        return &pq[0];
+    }
+
+    PQ_ENTRY* pq_end() {
+        return &pq[pq_size - 1];
+    }
+
+    void push_pq(GATE* gate, int delta) {
+        pq[pq_size++] = { T + delta, gate };
+        push_heap(pq_begin(), pq_end(), greater<PQ_ENTRY>());
+    }
+
+    PQ_ENTRY pop_pq() {
+        PQ_ENTRY p = *pq_begin();
+        pop_heap(pq_begin(), pq_end(), greater<PQ_ENTRY>());
+        pq_size--;
+        return p;
+    }
 
     void clear() {
-        pq = priority_queue<PQ_PAIR, vector<PQ_PAIR>, greater<PQ_PAIR>>();
+        pq_size = 0;
     }
 
-    void addGate(GATE* gate) {
-        pq.push({ T + 1, gate });
-    }
+    // Circuit Runner
 
     void runIncrement(function<void(void)> fn) {
         unordered_set<GATE*> seen;
 
-        while (pq.size() && pq.top().first == T) {
-            GATE* curr = pq.top().second;
-            pq.pop();
+        while (pq_size && pq_begin()->time == T) {
+            PQ_ENTRY curr = pop_pq();
 
-            if (seen.find(curr) != seen.end()) continue;
-            seen.insert(curr);
+            if (seen.find(curr.gate) != seen.end()) continue;
+            seen.insert(curr.gate);
 
-            curr->run();
+            curr.gate->run();
         }
         Wiring::apply_updates();
 
         // Sleep(1000);
-        cout << "T = " << T << (pq.size() ? "\n" : "-infinity\n");
+        cout << "T = " << T << (pq_size ? "\n" : "-infinity\n");
         fn();
         T++;
     }
 
     void run(function<void(void)> fn) {
-        while (pq.size()) {
+        while (pq_size) {
             runIncrement(fn);
         }
     }
 
     void print() {
-        vector<PQ_PAIR> buffer;
+        printf("PQ (size %d):\n", pq_size);
 
-        printf("PQ (size %d):\n", pq.size());
-
-        while (pq.size()) {
-            PQ_PAIR p = pq.top();
-            buffer.push_back(p);
-            pq.pop();
-            cout << p.first << ": " << p.second << '\n';
-        }
-
-        for (PQ_PAIR p : buffer) {
-            pq.push(p);
+        for (int i = 0; i < pq_size; i++) {
+            cout << pq[i].time << ": " << pq[i].gate << '\n';
         }
     }
 };
