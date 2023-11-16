@@ -58,7 +58,7 @@ void init_circuit(string str) {
                 int n = getInt(str, i);
                 v.push_back(n);
                 i++;
-                
+
                 if (str[i - 1] == ';' && str[i - 1] == '|') {
                     break;
                 }
@@ -68,5 +68,5 @@ void init_circuit(string str) {
 }
 
 int main() {
-    init_circuit("NAND|1|0|2;NAND|0|1,2|");
+    init_circuit("NAND|2-1|1-1|0-1,3-1,4-1;NAND|3-1|4-1|;");
 }

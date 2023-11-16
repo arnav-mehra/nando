@@ -5,6 +5,7 @@ import Canvas from './canvas/Canvas';
 import Tools from './canvas/Tools';
 import Notifs from './Notifs';
 import { saveLocalCircuit } from './storage/local';
+import { init_wasm } from './storage/conversion';
 
 const GATE_DATA = {
   "NAND": {
@@ -83,11 +84,13 @@ function App() {
     },
     save: () => {
       try {
+        console.log(circuit())
+        console.log(init_wasm(circuit()))
         saveLocalCircuit(circuit());
         pushNotif("Saved circuit " + circuit().meta.name + "!");
       } catch (err) {
-        pushNotif("Error: Unable to save circuit.");
         console.log({ err });
+        pushNotif("Error: Unable to save circuit.");
       }
     }
   }
