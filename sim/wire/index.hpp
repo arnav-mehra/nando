@@ -12,7 +12,9 @@ namespace Wiring {
     constexpr int N_WIRES = 1000;
 
     int reserved = 0;
-    bool wires[N_WIRES] = {};
+
+    bool wires_arr[N_WIRES] = {};
+    bool* wires = wires_arr;
     bool updates[N_WIRES] = {};
     vector<GATE*> plugs[N_WIRES];
 
@@ -79,5 +81,13 @@ namespace Wiring {
     void print_usage() {
         cout << "WIRE USAGE: " << Wiring::reserved
                       << " / " << Wiring::N_WIRES << '\n';
+    }
+
+    string to_string() {
+        char ch[1000];
+        for (int i = 0; i < reserved; i++) {
+            ch[i] = Wiring::get(i) ? '1' : '0';
+        }
+        return string(ch);
     }
 };

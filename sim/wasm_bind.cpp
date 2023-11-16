@@ -5,68 +5,53 @@
 
 using namespace std;
 
-namespace Gates {
-    array<GATE, 1000> gates;
-    int reserved = 0;
+namespace WasmSim {
+    GATE* gates;
+    int reserved_gates;
 
-    void add(OP op, int in1, int in2, int out) {
-        gates[reserved++].init(
-            op, in1, in2, out
-        );
+    void add_gate() {
+        gates[reserved_gates++].init(OP::NAND, 0, 0, 0);
     }
-};
 
-OP getOP(string &str, int &i) {
-    if (str[i] == 'N' && str[i + 1] == 'A') {
-        i += 5;
-        return OP::NAND;
+    void add_wire(string str) {
+        
     }
-}
 
-int getInt(string& str, int& i) {
-    int n = 0;
-    while (i < str.size() && str[i] != ',' && str[i] != '|') {
-        int t = str[i] - '0';
-        n += t;
-        n *= 10;
-        i++;
-    }
-    return n;
-}
+    void import(int* gate_buff, int n_gates,
+                int* wire_buff, int n_wires,
+                int* pq_buff, int pq_size) {
+        reserved_gates = n_gates;
+        gates = (GATE*)gate_buff;
 
-struct JsGate {
-    OP op;
-    vector<int> pin_wires[3];
-
-    JsGate() {}
-};
-
-void init_circuit(string str) {
-    Gates::reserved = 0;
-    Wiring::reserved = 0;
-    
-    int i = 0;
-
-    while (i != str.size()) {
-        JsGate js;
-        js.op = getOP(str, i);
-
-        for (int it = 0; it < 3; it++) {
-            vector<int> &v = js.pin_wires[it];
-
-            while (true) {
-                int n = getInt(str, i);
-                v.push_back(n);
-                i++;
-
-                if (str[i - 1] == ';' && str[i - 1] == '|') {
-                    break;
-                }
-            }
+        Wiring::reserved = n_wires;
+        Wiring::wires = (bool*)wire_buff;
+        
+        Scheduler::PQ_PAIR* sched_buff = (Scheduler::PQ_PAIR*)pq_buff;
+        Scheduler::clear();
+        for (int i; i < pq_size; i++) {
+            Scheduler::pq.push(sched_buff[i]);
         }
     }
-}
+
+    void export(int* pq_buff, int* pq_size) {
+        *pq_size = Scheduler::pq.size();
+
+        Scheduler::PQ_PAIR* sched_buff = (Scheduler::PQ_PAIR*)pq_buff;
+        int i = 0;
+        while (Scheduler::pq.size()) {
+            sched_buff[i++] = Scheduler::pq.top();
+            Scheduler::pq.pop();
+        }
+        for (int i = 0; i < *pq_size; i++) {
+            Scheduler::pq.push(sched_buff[i]);
+        }
+    }
+
+    string next_iter() {
+        Scheduler::runIncrement([](){});
+        return Wiring::to_string();
+    }
+};
 
 int main() {
-    init_circuit("NAND|2-1|1-1|0-1,3-1,4-1;NAND|3-1|4-1|;");
 }

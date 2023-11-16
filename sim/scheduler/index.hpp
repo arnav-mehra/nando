@@ -16,6 +16,10 @@ namespace Scheduler {
     typedef pair<int, GATE*> PQ_PAIR; 
     priority_queue<PQ_PAIR, vector<PQ_PAIR>, greater<PQ_PAIR>> pq;
 
+    void clear() {
+        pq = priority_queue<PQ_PAIR, vector<PQ_PAIR>, greater<PQ_PAIR>>();
+    }
+
     void addGate(GATE* gate) {
         pq.push({ T + 1, gate });
     }
