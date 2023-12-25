@@ -1,4 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   margin: 0;
   font-family: 'Roboto';
+
+  color: white;
+  stroke: white;
+}
+
+#app-root {
+  width: 100vw;
+  height: 100vh;
+  background-color: theme('colors.blue.200');
+}
+
+button:hover, input:hover {
+  stroke: theme('colors.blue.400') !important;
+  color: theme('colors.blue.400') !important;
+  border-color: theme('colors.blue.400') !important;
 }

@@ -3,12 +3,14 @@ import styles from './Canvas.module.css'
 
 const Gate = ({
     gate,
+    isSelected,
+    setSelected,
+    
+    selectedPin,
+    handlePinSelect,
+
     transform,
     setPosition,
-    onPinClick,
-    selectedPin,
-    isSelected,
-    setSelected
 }) => {
     const [ mouseDown, setMouseDown ] = createSignal(false);
 
