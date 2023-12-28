@@ -17,7 +17,7 @@ export class RecentCircuits {
                 id: v.id
             }),
             v => true,
-            (a, v) => a.length == 10
+            (a, v) => a.length == 8
         );
         RecentCircuits.setList(docs);
     }

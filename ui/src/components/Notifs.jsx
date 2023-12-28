@@ -35,7 +35,7 @@ const Notifs = () => {
             }}
             class="fixed w-full flex justify-center text-black z-[102]"
         >
-            <div class="p-4 gap-4 rounded-md bg-white flex items-between">
+            <div class="p-4 gap-2 rounded-md bg-white flex items-between">
                 {notif()?.text.includes("Save") &&
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

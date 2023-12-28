@@ -8,40 +8,54 @@ const Canvas = () => {
     const [ center, setCenter ] = createSignal([ 0, 0 ]);
     const [ zoom, setZoom ] = createSignal(1);
 
+    const [ drag, setDrag ] = createSignal(null);
+
     const transform = {
-        to_delta: ([ dx, dy ]) => {
-            const ndx = dx * zoom();
-            const ndy = dy * zoom();
-            return [ ndx, ndy ];
+        to_vc: ([x, y]) => {
+            const [ w, h ] = [ window.innerWidth, window.innerHeight ];
+            return [
+                (x - w / 2 - center()[0]) / zoom() + w / 2,
+                (y - h / 2 - center()[1]) / zoom() + h / 2
+            ];
         },
-        to_coord: ([x, y]) => {
-            const nx = x * zoom() + center()[0];
-            const ny = y * zoom() + center()[1];
-            return [ nx, ny ];
-        },
-        from_coord: ([x, y]) => {
-            const nx = (x - center()[0]) / zoom();
-            const ny = (y - center()[1]) / zoom();
-            return [ nx, ny ];
+        from_vc: ([x, y]) => {
+            const [ w, h ] = [ window.innerWidth, window.innerHeight ];
+            return [
+                (x - w / 2) * zoom() + w / 2 + center()[0],
+                (y - h / 2) * zoom() + h / 2 + center()[1]
+            ];
         }
     };
 
     const actions = {
-        keyPress: e => LiveActions.command(e.key),
-
-        mouseDown: _ => setMouseDown(true),
-        mouseUp: _ => setMouseDown(false),
+        keyPress: e => {
+            if (e.shiftKey) {
+                const key = e.key.toLowerCase();
+                LiveActions.command(key);
+            }
+        },
+        mouseDown: _ => {
+            setMouseDown(true);
+        },
+        mouseUp: _ => {
+            setMouseDown(false);
+            setDrag(null);
+        },
         mouseMove: e => {
+            if (drag()) {
+                const coords = [ e.pageX, e.pageY ];
+                setDrag(d => ({
+                    ...d, position: transform.to_vc(coords)
+                }));
+            }
             if (mouseDown()) {
                 const [ x, y ] = center();
                 setCenter([
                     x + e.movementX,
                     y + e.movementY
-                ])
-                console.log(center())
+                ]);
             }
         },
-
         wheelMove: e => {
             const d = e.deltaY;
             const nz = zoom() + (d / 1000);
@@ -56,11 +70,11 @@ const Canvas = () => {
             onKeyPress={actions.keyPress}
             onMouseDown={actions.mouseDown}
             onMouseUp={actions.mouseUp}
-            onMouseMove={actions.mouseMove}
             onWheel={actions.wheelMove}
+            onMouseMove={actions.mouseMove}
         >
             <div
-                class="w-screen h-screen absolute overflow-hidden"
+                class="w-screen h-screen absolute"
                 style={{
                     transform: `
                         translate(${center()[0]}px, ${center()[1]}px)
@@ -72,17 +86,13 @@ const Canvas = () => {
                     {id => (
                         <Gate
                             id={id}
-                            transform={transform}
+                            drag={drag}
+                            setDrag={setDrag}
                         />
                     )}
                 </For>
                 <For each={LiveCircuit.wireIds.get()}>
-                    {id => (
-                        <Wire
-                            id={id}
-                            transform={transform}
-                        />
-                    )}
+                    {id => <Wire id={id}/>}
                 </For>
             </div>
         </div>

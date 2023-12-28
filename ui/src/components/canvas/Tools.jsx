@@ -10,6 +10,14 @@ const Tools = () => {
     };
 
     return (
+        <>
+        <div class="fixed right-0 bottom-0 p-4 gap-2">
+            {/* <div>SHIFT + CMD</div> */}
+            <div>(P)lay/pause</div>
+            <div>(I)nfo</div>
+            <div>(S)ave</div>
+        </div>
+
         <div class="fixed right-0 top-0 p-4 gap-2 flex">
             <button onClick={actions.togglePlay}>
                 <svg
@@ -40,6 +48,7 @@ const Tools = () => {
                 </svg>
             </button>
         </div>
+        </>
     );
 };
 

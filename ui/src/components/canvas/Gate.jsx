@@ -1,11 +1,12 @@
-import { For, createMemo, createSignal } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 import styles from './Canvas.module.css'
 import { PIN_HARD_DATA } from "../../script/util";
 import { LiveActions, LiveCircuit } from "../../script/stores/live_circuit";
 
 const Gate = ({
     id,
-    transform,
+    drag,
+    setDrag
 }) => {
     const gate = LiveCircuit.gateSigs[id].get;
     const pins = gate().pins.map((id, i) => {
@@ -17,7 +18,6 @@ const Gate = ({
     const size = [100, 50];
     const pinSize = [10, 10];
 
-    const [ mouseDown, setMouseDown ] = createSignal(false);
     const isSelected = createMemo(_ => (
         LiveActions.selection.get()?.id == id
     ));
@@ -31,30 +31,24 @@ const Gate = ({
             LiveActions.selectPin(id);
             e.stopPropagation();
         },
-
         mouseDown: e => {
-            setMouseDown(true);
-            e.stopPropagation();
-        },
-        mouseUp: e => {
-            setMouseDown(false);
-            e.stopPropagation();
-        },
-        mouseMove: e => {
-            if (mouseDown()) {
-                const position = transform.from_coord([ e.pageX, e.pageY ]);
-                LiveCircuit.patchGate(id, { position });
-            }
+            setDrag({ id, position: gate().position });
             e.stopPropagation();
         }
     };
+
+    createEffect(() => {
+        if (drag()?.id == id) {
+            const position = drag().position;
+            LiveCircuit.patchGate(id, { position });
+        }
+    });
 
     return (
         <div
             onClick={actions.click}
             onMouseDown={actions.mouseDown}
-            onMouseUp={actions.mouseUp}
-            onMouseMove={actions.mouseMove}
+            onMouseUp={e => {}}
 
             class="
                 absolute cursor-grab

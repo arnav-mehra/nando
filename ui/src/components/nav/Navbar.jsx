@@ -1,11 +1,13 @@
 import { createSignal } from 'solid-js';
 import Recents from './Recents';
+import { Circuits } from '../../script/stores/circuits';
 
 const Navbar = () => {
     const [ expanded, setExpanded ] = createSignal(false);
 
     const actions = {
-        toggleExpanded: () => setExpanded(e => !e)
+        toggleExpanded: () => setExpanded(e => !e),
+        createCircuit: Circuits.create
     };
 
     return (
@@ -41,6 +43,13 @@ const Navbar = () => {
                     </div>
 
                     <Recents/>
+
+                    <button
+                        class="border-dashed border-[1px] rounded-md p-2"
+                        onClick={actions.createCircuit}
+                    >
+                        Create Circuit +
+                    </button>
                 </div>
 
                 <div class="justify-self-end w-full flex items-center opacity-20">

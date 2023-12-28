@@ -13,7 +13,7 @@ body {
 #app-root {
   width: 100vw;
   height: 100vh;
-  background-color: theme('colors.blue.200');
+  background-color: theme('colors.blue.300');
 }
 
 button:hover, input:hover {

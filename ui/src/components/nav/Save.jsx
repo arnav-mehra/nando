@@ -43,7 +43,7 @@ const Save = ({
 
     return (
         <div
-            class="relative flex justify-between border-y-[1px] border-solid border-gray-800 p-2"
+            class="relative flex justify-between border-b-[1px] border-solid border-gray-900 p-2"
             onMouseLeave={actions.closeModal}
         >
             <input
@@ -57,7 +57,7 @@ const Save = ({
                 class="flex items-center justify-end gap-1 w-full"
                 onClick={actions.loadCircuit}
             >
-                <div class="opacity-40 text-xs">
+                <div class="opacity-20 text-xs">
                     Last Updated: {last_updated_msg}
                 </div>
 

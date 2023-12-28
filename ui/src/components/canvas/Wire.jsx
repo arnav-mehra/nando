@@ -4,8 +4,7 @@ import { LiveActions, LiveCircuit } from "../../script/stores/live_circuit"
 import { PIN_HARD_DATA } from "../../script/util";
 
 const Wire = ({
-    id,
-    transform,
+    id
 }) => {
     const gateSize = [100, 50];
 
@@ -35,20 +34,16 @@ const Wire = ({
         const xf = toGatePos[0] + toPinPos[0] - gateSize[0] / 2
         const yf = toGatePos[1] + toPinPos[1] - gateSize[1] / 2
 
-        const [ xit, yit ] = transform.to_coord([ xi, yi ])
-        const [ xft, yft ] = transform.to_coord([ xf, yf ])
-        
-        const dx = xft - xit;
-        const dy = yft - yit;
+        const dx = xf - xi;
+        const dy = yf - yi;
         const len = Math.sqrt(dx * dx + dy * dy)
 
         return {
-            top: (yit + yft) / 2,
-            left: (xit + xft) / 2,
+            top: (yi + yf) / 2,
+            left: (xi + xf) / 2,
             width: len,
             angle: Math.atan(dy / dx),
-            xit, yit,
-            xft, yft
+            xi, yi, xf, yf
         };
     })
 
@@ -58,28 +53,29 @@ const Wire = ({
                 style={{
                     cursor: "pointer",
                     position: "absolute",
-                    left: `${vec().left - vec().width / 2 - (isSelected() ? 1 : 0)}px`,
-                    top: `${vec().top - (isSelected() ? 1 : 0)}px`,
+                    left: `${vec().left - vec().width / 2}px`,
+                    top: `${vec().top}px`,
                     width: `${vec().width}px`,
                     height: `2px`,
                     transform: `rotate(${vec().angle}rad)`,
                     "background-color": wire().value ? "red" : "black",
-                    border: isSelected() ? "1px solid white" : "none"
+                    outline: isSelected() ? "1px solid white" : "none"
                 }}
                 onClick={onSelect}
             />
+
             <div
                 class={styles.wire_dots}
                 style={{
-                    left: `${vec().xit - 3}px`,
-                    top: `${vec().yit - 3}px`
+                    left: `${vec().xi - 3}px`,
+                    top: `${vec().yi - 3}px`
                 }}
             />
             <div
                 class={styles.wire_dots}
                 style={{
-                    left: `${vec().xft - 3}px`,
-                    top: `${vec().yft - 3}px`
+                    left: `${vec().xf - 3}px`,
+                    top: `${vec().yf - 3}px`
                 }}
             />
         </>

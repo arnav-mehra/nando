@@ -2,6 +2,7 @@ import { createMemo, createSignal } from "solid-js";
 import { getDoc, upsertDoc } from "../db/db_ops";
 import { pushNotif } from "./notifs";
 import { GATE_FLEX_DATA, PIN_FLEX_DATA, PIN_HARD_DATA, clone, ezSignal, keyGen } from "../util";
+import { RecentCircuits } from "./circuits";
 
 export class LiveCircuit {
   static value = null;
@@ -37,7 +38,9 @@ export class LiveCircuit {
  
   static async save() {
     const doc = LiveCircuit.value;
+    doc.last_updated = Date.now();
     await upsertDoc("circuits", doc);
+    RecentCircuits.load();
     pushNotif("Saved circuit " + LiveCircuit.value.name + "!");
   };
 
@@ -123,17 +126,25 @@ export class LiveCircuit {
   // PATCH
 
   static patchGate(id, patch) {
-    LiveCircuit.gateSigs[id].set(gate => ({
-      ...gate,
-      ...patch
-    }));
+    LiveCircuit.gateSigs[id].set(gate => {
+      const res = {
+        ...gate,
+        ...patch
+      };
+      LiveCircuit.gates[id] = res;
+      return res;
+    });
   }
 
   static patchWire(id, patch) {
-    LiveCircuit.wireSigs[id].set(wire => ({
-      ...wire,
-      ...patch
-    }));
+    LiveCircuit.wireSigs[id].set(wire => {
+      const res = {
+        ...wire,
+        ...patch
+      };
+      LiveCircuit.wires[id] = res;
+      return res;
+    });
   }
 };
 
@@ -187,6 +198,7 @@ export class LiveActions {
         break;
       }
       case 'i': { // info
+        console.log(LiveCircuit.value);
         break;
       }
     }
