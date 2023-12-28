@@ -1,18 +1,18 @@
 import { createSignal } from 'solid-js';
-import Saves from './Saves';
+import Recents from './Recents';
 
 const Navbar = () => {
     const [ expanded, setExpanded ] = createSignal(false);
 
-    const toggleExpanded = () => {
-        setExpanded(!expanded())
+    const actions = {
+        toggleExpanded: () => setExpanded(e => !e)
     };
 
     return (
         <>
             <button
                 class="z-[101] fixed p-4 cursor-pointer"
-                onClick={toggleExpanded}
+                onClick={actions.toggleExpanded}
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -40,9 +40,7 @@ const Navbar = () => {
                         Nando
                     </div>
 
-                    <Saves
-                        expanded={expanded}
-                    />
+                    <Recents/>
                 </div>
 
                 <div class="justify-self-end w-full flex items-center opacity-20">

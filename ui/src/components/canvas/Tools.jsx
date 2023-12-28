@@ -1,24 +1,17 @@
-import { createSignal } from "solid-js"
-import styles from './Canvas.module.css'
+import { createSignal } from "solid-js";
+import { LiveCircuit } from "../../script/stores/live_circuit";
 
-const Tools = ({
-    circuit,
-    setCircuit,
-    circuitOps
-}) => {
+const Tools = () => {
     const [ play, setPlay ] = createSignal(true);
 
-    const togglePlay = () => {
-        setPlay(!play())
-    };
-
-    const addGate = () => {
-        circuitOps.addGate("NAND");
+    const actions = {
+        addGate: () => LiveCircuit.addGate("NAND"),
+        togglePlay: () => setPlay(p => !p)
     };
 
     return (
         <div class="fixed right-0 top-0 p-4 gap-2 flex">
-            <button onClick={togglePlay}>
+            <button onClick={actions.togglePlay}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -33,7 +26,7 @@ const Tools = ({
                 </svg>
             </button>
 
-            <button onClick={addGate}>
+            <button onClick={actions.addGate}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -47,7 +40,7 @@ const Tools = ({
                 </svg>
             </button>
         </div>
-    )
-}
+    );
+};
 
-export default Tools
+export default Tools;

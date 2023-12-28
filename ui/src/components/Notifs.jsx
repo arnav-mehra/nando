@@ -1,9 +1,7 @@
 import { createEffect, createSignal } from "solid-js"
+import { notifQueue, setNotifQueue } from "../script/stores/notifs";
 
-const Notifs = ({
-    notifQueue,
-    setNotifQueue
-}) => {
+const Notifs = () => {
     const [ isShown, setIsShown ] = createSignal();
     const [ notif, setNotif ] = createSignal();
 
@@ -35,7 +33,7 @@ const Notifs = ({
                 bottom: isShown() ? "5px" : "-50px",
                 transition: "bottom 0.5s ease",
             }}
-            class="fixed w-full flex justify-center text-black"
+            class="fixed w-full flex justify-center text-black z-[102]"
         >
             <div class="p-4 gap-4 rounded-md bg-white flex items-between">
                 {notif()?.text.includes("Save") &&
@@ -53,7 +51,7 @@ const Notifs = ({
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Notifs
+export default Notifs;

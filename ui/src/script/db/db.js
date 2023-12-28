@@ -15,19 +15,12 @@ const load_db = async () => {
             const _db = e.target.result;
             
             const circuitStore = _db.createObjectStore("circuits", {
-                autoIncrement: true
+                autoIncrement: true,
+                keyPath: "id"
             });
             circuitStore.createIndex(
                 "last_updated", "last_updated",
                 { unique: false }
-            );
-            circuitStore.createIndex(
-                "name", "name",
-                { unique: true }
-            );
-            circuitStore.createIndex(
-                "name, last_updated", ["name", "last_updated"],
-                { unique: true }
             );
         };
         db_req.onsuccess = (e) => {
@@ -49,6 +42,26 @@ export const exec_transaction = async (transaction_cb) => {
 
     const results = await new Promise((res, rej) => {
         req.onsuccess = e => res(e.target.result);
+        req.onerror = rej;
+    });
+    return results;
+};
+
+export const exec_cursor_transaction = async (transaction_cb, mapper, filter, stopper) => {
+    const _db = await load_db();
+    const req = transaction_cb(_db);
+
+    const results = await new Promise((res, rej) => {
+        const arr = [];
+        req.onsuccess = e => {
+            const cursor = e.target.result;
+            if (!cursor) { res(arr); return; }
+
+            const val = mapper(cursor.value);
+            if (stopper(arr, val)) { res(arr); return; }
+            if (filter(val)) arr.push(val);
+            cursor.continue();
+        };
         req.onerror = rej;
     });
     return results;

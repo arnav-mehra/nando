@@ -1,23 +1,39 @@
 import { createMemo } from "solid-js"
 import styles from './Canvas.module.css'
+import { LiveActions, LiveCircuit } from "../../script/stores/live_circuit"
+import { PIN_HARD_DATA } from "../../script/util";
 
 const Wire = ({
-    wire,
+    id,
     transform,
-    circuit,
-    isSelected,
-    setSelected
 }) => {
-    const vec = createMemo(() => {
-        const fromGate = circuit().data.gates[wire().from.gate]
-        const toGate = circuit().data.gates[wire().to.gate]
-        const fromPin = fromGate.pins[wire().from.pin]
-        const toPin = toGate.pins[wire().to.pin]
+    const gateSize = [100, 50];
 
-        const xi = fromGate.position[0] + fromPin.position[0] - fromGate.width / 2
-        const yi = fromGate.position[1] + fromPin.position[1] - fromGate.height / 2
-        const xf = toGate.position[0] + toPin.position[0] - toGate.width / 2
-        const yf = toGate.position[1] + toPin.position[1] - toGate.height / 2
+    const wire = LiveCircuit.wireSigs[id].get;
+    
+    const [ fromPid, toPid ] = wire().pins;
+    const fromPin = LiveCircuit.pins[fromPid];
+    const toPin = LiveCircuit.pins[toPid];
+
+    const fromGate = LiveCircuit.gateSigs[fromPin.gate].get;
+    const toGate = LiveCircuit.gateSigs[toPin.gate].get;
+
+    const fromPinPos = PIN_HARD_DATA['NAND'].positions[fromGate().pins.findIndex(x => x === fromPid)];
+    const toPinPos = PIN_HARD_DATA['NAND'].positions[toGate().pins.findIndex(x => x === toPid)];
+
+    const isSelected = createMemo(_ => (
+        LiveActions.selection.get()?.id === id
+    ));
+    const onSelect = _ => LiveActions.selectWire(id);
+
+    const vec = createMemo(_ => {
+        const fromGatePos = fromGate().position;
+        const toGatePos = toGate().position;
+
+        const xi = fromGatePos[0] + fromPinPos[0] - gateSize[0] / 2
+        const yi = fromGatePos[1] + fromPinPos[1] - gateSize[1] / 2
+        const xf = toGatePos[0] + toPinPos[0] - gateSize[0] / 2
+        const yf = toGatePos[1] + toPinPos[1] - gateSize[1] / 2
 
         const [ xit, yit ] = transform.to_coord([ xi, yi ])
         const [ xft, yft ] = transform.to_coord([ xf, yf ])
@@ -50,7 +66,7 @@ const Wire = ({
                     "background-color": wire().value ? "red" : "black",
                     border: isSelected() ? "1px solid white" : "none"
                 }}
-                onClick={setSelected}
+                onClick={onSelect}
             />
             <div
                 class={styles.wire_dots}

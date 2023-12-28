@@ -21,3 +21,11 @@ button:hover, input:hover {
   color: theme('colors.blue.400') !important;
   border-color: theme('colors.blue.400') !important;
 }
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: theme('colors.gray.800');
+  border-radius: 20px;
+}
