@@ -33,3 +33,10 @@ export const PIN_HARD_DATA = {
         ]
     }
 };
+
+export const pinY = (n, i) => {
+    const height = (n - 1) * 25;
+    const start = -height / 2;
+    const offset = i * 25;
+    return start + offset;
+}

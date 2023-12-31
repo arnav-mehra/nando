@@ -16,10 +16,18 @@ body {
   background-color: theme('colors.blue.300');
 }
 
-button:hover, input:hover {
+button:hover, input:hover, select:hover {
   stroke: theme('colors.blue.400') !important;
   color: theme('colors.blue.400') !important;
   border-color: theme('colors.blue.400') !important;
+}
+
+input {
+  background: black;
+}
+
+select, option {
+  cursor: pointer;
 }
 
 *::-webkit-scrollbar-track {
@@ -28,4 +36,34 @@ button:hover, input:hover {
 *::-webkit-scrollbar-thumb {
   background-color: theme('colors.gray.800');
   border-radius: 20px;
+}
+
+#canvas {
+  z-index: 0;
+}
+
+#gate-editor {
+  z-index: 10;
+}
+
+#functions {
+  z-index: 20;
+}
+
+#nav-menu {
+  z-index: 30;
+}
+#nav-button {
+  z-index: 31;
+}
+#nav-modal {
+  z-index: 32;
+}
+
+.tools {
+  z-index: 40;
+}
+
+#notifs {
+  z-index: 50;
 }

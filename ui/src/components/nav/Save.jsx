@@ -12,7 +12,8 @@ const getLastUpdatedMsg = (save) => {
 };
 
 const Save = ({
-    save
+    save,
+    closeNavbar
 }) => {
     const [ modalOpen, setModalOpen ] = createSignal(false);
     const [ name, setName ] = createSignal(save.name);
@@ -20,7 +21,10 @@ const Save = ({
     const last_updated_msg = getLastUpdatedMsg(save);
 
     const actions = {
-        loadCircuit: _ => LiveCircuit.load(save.id),
+        loadCircuit: _ => {
+            LiveCircuit.load(save.id);
+            closeNavbar();
+        },
         downloadCircuit: _ => Circuits.download(save.id),
         deleteCircuit: _ => Circuits.delete(save.id),
 
@@ -43,7 +47,7 @@ const Save = ({
 
     return (
         <div
-            class="relative flex justify-between border-b-[1px] border-solid border-gray-900 p-2"
+            class="cursor-pointer relative flex justify-between border-b-[1px] border-solid border-gray-900 p-2"
             onMouseLeave={actions.closeModal}
         >
             <input
@@ -69,7 +73,10 @@ const Save = ({
             </div>
 
             {modalOpen() &&
-                <div class="absolute right-[-35px] mt-2 flex duration-200 z-[102]">
+                <div
+                    class="absolute right-[-35px] mt-2 flex duration-200"
+                    id="nav-modal"
+                >
                     <div class="h-2 border-4 border-solid border-gray-600 rounded-bl-xl"/>
                     
                     <div class="p-2 rounded-b-md rounded-tr-md bg-gray-600 flex flex-col gap-2">

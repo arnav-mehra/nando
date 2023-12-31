@@ -1,5 +1,16 @@
+import { upsertDoc } from "./db_ops";
+
 const DB_NAME = "nando";
-const COLLECTION_NAMES = ["circuits"];
+const COLLECTION_NAMES = ["circuits", "functions"];
+const INIT_FUNCTIONS = [
+    { name: "NAND", fn: "(a, b) => 1 - (a & b)" },
+    { name: "AND",  fn: "(a, b) => a & b" },
+    { name: "NOR", fn: "(a, b) => 1 - (a | b)" },
+    { name: "OR", fn: "(a, b) => a | b" },
+    { name: "NOT", fn: "a => 1 - a" },
+    { name: "XOR", fn: "(a, b) => a ^ b" }
+];
+
 let db;
 
 /**
@@ -12,9 +23,9 @@ const load_db = async () => {
         const db_req = window.indexedDB.open(DB_NAME);
 
         db_req.onupgradeneeded = (e) => {
-            const _db = e.target.result;
+            db = e.target.result;
             
-            const circuitStore = _db.createObjectStore("circuits", {
+            const circuitStore = db.createObjectStore("circuits", {
                 autoIncrement: true,
                 keyPath: "id"
             });
@@ -22,6 +33,11 @@ const load_db = async () => {
                 "last_updated", "last_updated",
                 { unique: false }
             );
+
+            const functionStore = db.createObjectStore("functions", {
+                keyPath: "name"
+            });
+            INIT_FUNCTIONS.forEach(doc => functionStore.add(doc));
         };
         db_req.onsuccess = (e) => {
             db = db_req.result;

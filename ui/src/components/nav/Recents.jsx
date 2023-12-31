@@ -2,7 +2,9 @@ import { For, createEffect } from "solid-js";
 import { RecentCircuits } from "../../script/stores/circuits";
 import Save from "./Save";
 
-const Recents = () => {
+const Recents = ({
+    closeNavbar
+}) => {
     const actions = {
         load: _ => RecentCircuits.load()
     };
@@ -16,7 +18,12 @@ const Recents = () => {
             </div>
 
             <For each={RecentCircuits.list()}>
-                {save => <Save save={save}/>}
+                {save =>
+                    <Save
+                        save={save}
+                        closeNavbar={closeNavbar}
+                    />
+                }
             </For>
         </div>
     );

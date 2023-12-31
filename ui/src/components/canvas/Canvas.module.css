@@ -14,12 +14,12 @@
     border-radius: 50%;
     background-color: green;
     cursor: pointer;
-    pointer-events: none;
+    /* pointer-events: none; */
     z-index: 1;
 }
 
 .gate_label {
-    pointer-events: none;
+    /* pointer-events: none; */
     user-select: none;
 }
 
@@ -48,5 +48,5 @@
     height: 6px;
     border-radius: 50%;
     background-color: orange;
-    pointer-events: none;
+    /* pointer-events: none; */
 }

@@ -33,7 +33,8 @@ const Notifs = () => {
                 bottom: isShown() ? "5px" : "-50px",
                 transition: "bottom 0.5s ease",
             }}
-            class="fixed w-full flex justify-center text-black z-[102]"
+            class="fixed w-full flex justify-center text-black"
+            id="notifs"
         >
             <div class="p-4 gap-2 rounded-md bg-white flex items-between">
                 {notif()?.text.includes("Save") &&

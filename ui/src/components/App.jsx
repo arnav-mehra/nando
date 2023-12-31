@@ -1,9 +1,11 @@
-import { createEffect, createSignal, onMount } from 'solid-js';
 import Navbar from './nav/Navbar';
 import Canvas from './canvas/Canvas';
 import Tools from './canvas/Tools';
 import Notifs from './Notifs';
-import { LiveCircuit } from '../script/stores/live_circuit';
+import { LiveActions, LiveCircuit } from '../script/stores/live_circuit';
+import { GateFunctions } from '../script/stores/functions';
+import Functions from './Functions';
+import GateEditor from './canvas/GateEditor';
 
 function App() {
   return (
@@ -13,7 +15,13 @@ function App() {
         <>
           <Canvas/>
           <Tools/>
+          {LiveActions.editor.get() &&
+            <GateEditor/>
+          }
         </>
+      }
+      {GateFunctions.visible.get() &&
+        <Functions/>
       }
       <Notifs/> 
     </div>

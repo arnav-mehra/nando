@@ -3,18 +3,20 @@ import Recents from './Recents';
 import { Circuits } from '../../script/stores/circuits';
 
 const Navbar = () => {
-    const [ expanded, setExpanded ] = createSignal(false);
+    const [ expanded, setExpanded ] = createSignal(true);
 
     const actions = {
-        toggleExpanded: () => setExpanded(e => !e),
-        createCircuit: Circuits.create
+        toggleExpanded: _ => setExpanded(e => !e),
+        createCircuit: Circuits.create,
+        closeNavbar: _ => setExpanded(false)
     };
 
     return (
         <>
             <button
-                class="z-[101] fixed p-4 cursor-pointer"
+                class="fixed p-4 cursor-pointer"
                 onClick={actions.toggleExpanded}
+                id="nav-button"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -33,16 +35,19 @@ const Navbar = () => {
                 style={{ left: expanded() ? "0" : "-340px" }}
                 class="
                     bg-black duration-200
-                    fixed z-[100] p-4 w-80 h-full
+                    fixed p-4 w-80 h-full
                     flex flex-col justify-between
                 "
+                id="nav-menu"
             >
                 <div class="flex flex-col gap-4">
                     <div class="bg-white text-black rounded self-end px-2 py-1 font-bold">
                         Nando
                     </div>
 
-                    <Recents/>
+                    <Recents
+                        closeNavbar={actions.closeNavbar}
+                    />
 
                     <button
                         class="border-dashed border-[1px] rounded-md p-2"

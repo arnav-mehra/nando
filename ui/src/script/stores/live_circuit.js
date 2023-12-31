@@ -1,7 +1,6 @@
-import { createMemo, createSignal } from "solid-js";
 import { getDoc, upsertDoc } from "../db/db_ops";
 import { pushNotif } from "./notifs";
-import { GATE_FLEX_DATA, PIN_FLEX_DATA, PIN_HARD_DATA, clone, ezSignal, keyGen } from "../util";
+import { ezSignal, keyGen } from "../util";
 import { RecentCircuits } from "./circuits";
 
 export class LiveCircuit {
@@ -46,21 +45,24 @@ export class LiveCircuit {
 
   // CREATE
 
-  static createPins(gid, type) {
-    return PIN_HARD_DATA[type].positions.map(_ => {
+  static createPins(gid, num) {
+    return new Array(num).fill().map(_ => {
       const key = 'pin/' + keyGen();
-      const pin = clone(PIN_FLEX_DATA[type]);
-      pin.gate = gid;
+      const pin = { wires: [], gate: gid };
 
       LiveCircuit.pins[key] = pin;
       return key;
     });
   }
 
-  static createGate(type) {
+  static createGate() {
     const key = 'gate/' + keyGen();
-    const gate = clone(GATE_FLEX_DATA[type]);
-    gate.pins = LiveCircuit.createPins(key, type);
+    const gate = {
+      type: 'NAND',
+      position: [200, 200],
+      inPins: LiveCircuit.createPins(key, 2),
+      outPins: LiveCircuit.createPins(key, 1)
+    };
 
     LiveCircuit.gates[key] = gate;
     return [ key, gate ];
@@ -97,7 +99,10 @@ export class LiveCircuit {
   // DELETE
 
   static deleteGate(id) {
-    const pins = LiveCircuit.gates[id].pins;
+    const pins = [
+      ...LiveCircuit.gates[id].inPins,
+      ...LiveCircuit.gates[id].outPins
+    ];
     pins.forEach(LiveCircuit.deleteGatePin);
 
     delete LiveCircuit.gates[id];
@@ -150,6 +155,24 @@ export class LiveCircuit {
 
 export class LiveActions {
   static selection = ezSignal();
+  static editor = ezSignal();
+
+  static openGateEditor(id, gate) {
+    LiveActions.editor.set({
+      id,
+      type: gate.type,
+      numInPins: gate.inPins.length,
+      numOutPins: gate.outPins.length
+    });
+  }
+
+  static closeGateEditor() {
+    LiveActions.editor.set(null);
+  }
+
+  // static saveGateEdit(id) {
+
+  // }
 
   static selectGate(id) {
     LiveActions.selection.set(s => (
@@ -165,14 +188,33 @@ export class LiveActions {
 
   static selectPin(id) {
     const sel = LiveActions.selection.get();
-    if (sel?.type === "pin") {
+
+    // unclick.
+    if (sel?.id == id) {
       LiveActions.selection.set(null);
-      if (id !== sel) {
-        LiveCircuit.addWire(id, sel.id);
-      }
+      return;
     }
-    else {
+
+    // !pin -> pin
+    if (sel?.type != "pin") {
       LiveActions.selection.set({ id, type: 'pin' });
+      return;
+    }
+
+    // from/to pin -> from/to pin
+    LiveActions.selection.set(null);
+    const selIsFrom = LiveCircuit.gates[LiveCircuit.pins[sel.id].gate].outPins.includes(sel.id);
+    const newIsFrom = LiveCircuit.gates[LiveCircuit.pins[id].gate].outPins.includes(id);
+    if (!(selIsFrom ^ newIsFrom)) {
+      pushNotif("Wires must be from gate outputs to inputs.");
+      return;
+    }
+
+    // from/to pin -> to/from pin
+    if (selIsFrom) {
+      LiveCircuit.addWire(sel.id, id);
+    } else {
+      LiveCircuit.addWire(id, sel.id);
     }
   }
 

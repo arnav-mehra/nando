@@ -1,4 +1,4 @@
-import { For, createMemo, createSignal } from 'solid-js';
+import { For, createSignal } from 'solid-js';
 import { LiveCircuit, LiveActions } from '../../script/stores/live_circuit';
 import Gate from './Gate';
 import Wire from './Wire';
@@ -50,10 +50,8 @@ const Canvas = () => {
             }
             if (mouseDown()) {
                 const [ x, y ] = center();
-                setCenter([
-                    x + e.movementX,
-                    y + e.movementY
-                ]);
+                const [ dx, dy ] = [ e.movementX, e.movementY ];
+                setCenter([ x + dx, y + dy ]);
             }
         },
         wheelMove: e => {
@@ -64,38 +62,44 @@ const Canvas = () => {
     }
 
     return (
-        <div
-            class="h-screen w-screen overflow-hidden cursor-grab relative"
-            tabIndex={0}
-            onKeyPress={actions.keyPress}
-            onMouseDown={actions.mouseDown}
-            onMouseUp={actions.mouseUp}
-            onWheel={actions.wheelMove}
-            onMouseMove={actions.mouseMove}
-        >
+        <>
             <div
-                class="w-screen h-screen absolute"
-                style={{
-                    transform: `
-                        translate(${center()[0]}px, ${center()[1]}px)
-                        scale(${zoom()})
-                    `
-                }}
+                id="canvas"
+                class="h-screen w-screen overflow-hidden cursor-grab relative"
+                tabIndex={0}
+                onKeyPress={actions.keyPress}
+                onMouseDown={actions.mouseDown}
+                onMouseUp={actions.mouseUp}
+                onWheel={actions.wheelMove}
+                onMouseMove={actions.mouseMove}
             >
-                <For each={LiveCircuit.gateIds.get()}>
-                    {id => (
-                        <Gate
-                            id={id}
-                            drag={drag}
-                            setDrag={setDrag}
-                        />
-                    )}
-                </For>
-                <For each={LiveCircuit.wireIds.get()}>
-                    {id => <Wire id={id}/>}
-                </For>
+                <div
+                    class="w-screen h-screen absolute"
+                    style={{
+                        transform: `
+                            translate(${center()[0]}px, ${center()[1]}px)
+                            scale(${zoom()})
+                        `
+                    }}
+                >
+                    <For each={LiveCircuit.gateIds.get()}>
+                        {id =>
+                            <Gate
+                                id={id}
+                                drag={drag}
+                                setDrag={setDrag}
+                            />
+                        }
+                    </For>
+
+                    <For each={LiveCircuit.wireIds.get()}>
+                        {id =>
+                            <Wire id={id}/>
+                        }
+                    </For>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
