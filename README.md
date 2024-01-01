@@ -1,9 +1,40 @@
 # Description
 
 I'm making a circuit sim. Why? Cuz I felt like it.
-Prob gonna start it out as a lib, then later on compile to WASM and create a UI for creating circuits.
 
-# Progression
+Originally, the idea was to create a C++ lib for circuit sim, then later on compile to WASM and create a Solid.js UI for creating circuits.
+
+I might still do this, but have decided to proceed with a rudimentary JS runner that enables user-programmable gate logic. Replicating this programmability would require 
+runtime compilation to WASM, which could be an iteresting project of its own. Plus, due to JS-WASM overhead, the JS runner would actually perform better for simpler circuits.
+
+# UI Progression
+
+Tools: Solid.js, IndexedDB. 
+
+Features:
+1. Circuit storage using IDB.
+        Why: Need peristence, but don't want to spend on cloud resources, so we can simply store it on the user's device. Using the user's FS didn't seem clean in UX, so IDB was chosen.
+        Includes: Download circuit JSON. Recently modified list. 
+        To-Do: Page to manage all saved circuits. Circuit file upload/import.
+        Maybe: Add Google Drive import/export (would be a pain tho).
+2. Custom gate functions.
+        Why: Rather than restricting users to a fixed set of gates, users can define any gate to most accurately represents their scenario (and improve performance).
+        Includes: IDB storage. Management modal for CRUD w/ truth tables preview.
+        Maybe: WASM compilation for C++ sim compatibility.
+3. Circuit Builder.
+        Why: Building a circuit in JSON is slow and boring.
+        Includes: Pan/Zoom. Gate drag-drop. Object selection. Shift CMDs for basic ops. Gate io count and function editor. Vanilla JS impl for performance and avoiding solid.js anomalies.
+        To-Do: Discrete coordinates. Multi-select. Copy and paste. Undo/redo.
+        Maybe: Non-linear/parametric wire pathing. Automatic wire pathing.
+4. Circuit Simulator.
+        Why: It's the core of the project.
+        Includes: Optimized JS Runner.
+        To-Do: WASM Runner. State history for stepping.
+5. More to be written.
+
+
+
+# C++ Sim Progression
 
 ## Part 1: The Basics
     1. wires: hold temporary digital states.
