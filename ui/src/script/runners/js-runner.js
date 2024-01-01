@@ -2,63 +2,87 @@ import { GateFunctions } from "../stores/functions";
 import { LiveCircuit } from "../stores/live_circuit";
 import { ezSignal } from "../util";
 
+// Perf Log:
+//   V0 Runtime: 1M iter / ~1730ms = 0.58k/s. circuit: "cd2db7".
+//      Improvement: compiled io and fn into preprepped array for iter.
+//   V1 Runtime: 1M iter / ~680ms  = 1.47m/s. circuit: "cd2db7".
+//      Improvement: replaced map, reduce, etc. with for-loops.
+//   V2 Runtime: 1M iter / ~380ms  = 2.63m/s. circuit: "cd2db7".
+
 export class JsRunner {
     static play = ezSignal(false);
+    static interval = null;
 
     static playPause() {
         JsRunner.play.set(p => !p);
 
         if (JsRunner.play.get()) {
-            JsRunner.init();
+            JsRunner.run();
+        } else {
+            JsRunner.stop();
         }
     }
 
-    static init() {
-        const data = LiveCircuit.value.data;
-        const updates = [];
+    static stop() {
+        clearInterval(JsRunner.interval);
+        JsRunner.interval = null;
+    }
 
-        Object.values(data.gates).forEach(g => {
-            const inPins = g.inPins.map(pid => data.pins[pid]);
-            const outPins = g.outPins.map(pid => data.pins[pid]);
+    static run() {
+        const data = LiveCircuit.value.data;
+        const { gates, wires, pins } = data;
+        const gateList = Object.values(gates);
+
+        const comp = gateList.map(g => {
+            const inPins = g.inPins.map(pid => pins[pid]);
+            const outPins = g.outPins.map(pid => pins[pid]);
 
             const ins = inPins.map(pin => 
-                pin.wires
-                    .map(wid => data.wires[wid].value)
-                    .reduce((v, x) => (v | x), 0)
+                pin.wires.map(wid => wires[wid])
             );
             const fn = GateFunctions.fnMap[g.type];
-            let outs = fn(...ins);
-            outs = Array.isArray(outs) ? outs : [ outs ];
+            const [ _, outCnt ] = GateFunctions.determineIO(fn);
+            const ffn = outCnt == 1 ? x => [ fn(x) ] : fn;
 
-            outPins.forEach((pin, i) => {
-                pin.wires
-                    .map(wid => [wid, outs[i]])
-                    .forEach(x => updates.push(x));
-            });
+            const outs = outPins.map(pin =>
+                pin.wires.map(wid => LiveCircuit.objMap[wid])
+            );
+
+            return [ ins, ffn, outs ];
         });
 
-        updates.forEach(([wid, value]) => {
-            LiveCircuit.patchWire(wid, { value });
-        })
+        JsRunner.interval = setInterval(_ => {
+            JsRunner.iter(comp);
+        }, 1000);
 
-        // const idx_map = {};
-        // Object.keys(data.gates).forEach((id, i) => idx_map[id] = i);
-        // Object.keys(data.pins).forEach((id, i) => idx_map[id] = i);
-        // Object.keys(data.wires).forEach((id, i) => idx_map[id] = i);
+        // const ti = Date.now();
+        // for (let i = 0; i < 1000000; i++) {
+        //     JsRunner.iter(comp);
+        // }
+        // const tf = Date.now();
+        // console.log(tf - ti);
+    }
 
-        // const gates = Object.values(data.gates).map(g => ([
-        //     g.type,
-        //     ...g.pins.map(id => idx_map[id])
-        // ]));
-        // const pins = Object.values(data.pins).map(p => ([
-        //     idx_map[p.gate],
-        //     ...p.wires.map(id => idx_map[id])
-        // ]));
-        // const wires = Object.values(data.wires).map(w => ([
-        //     w.value,
-        //     ...w.pins.map(id => idx_map[id])
-        // ]));
-
-        // console.log({gates, pins, wires});
+    static iter(comp) {
+        for (const [inC, fnC, outC] of comp) {
+            const ins = [];
+            for (const wires of inC) {
+                let r = 0;
+                for (const wire of wires) {
+                    r |= wire.value;
+                }
+                ins.push(r);
+            }
+            const outs = fnC(...ins);
+            
+            const l = outC.length;
+            for (let i = 0; i < l; i++) {
+                const v = outs[i];
+                for (const lw of outC[i]) {
+                    lw.wire.value = v;
+                    lw.recolor();
+                }
+            }
+        }
     }
 };

@@ -1,14 +1,10 @@
-import { For, createSignal } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { LiveCircuit, LiveActions } from '../../script/stores/live_circuit';
-import Gate from './Gate';
-import Wire from './Wire';
 
 const Canvas = () => {
     const [ mouseDown, setMouseDown ] = createSignal(false);
     const [ center, setCenter ] = createSignal([ 0, 0 ]);
     const [ zoom, setZoom ] = createSignal(1);
-
-    const [ drag, setDrag ] = createSignal(null);
 
     const transform = {
         to_vc: ([x, y]) => {
@@ -39,12 +35,12 @@ const Canvas = () => {
         },
         mouseUp: _ => {
             setMouseDown(false);
-            setDrag(null);
+            LiveActions.drag.set(null);
         },
         mouseMove: e => {
-            if (drag()) {
+            if (LiveActions.drag.get()) {
                 const coords = [ e.pageX, e.pageY ];
-                setDrag(d => ({
+                LiveActions.drag.set(d => ({
                     ...d, position: transform.to_vc(coords)
                 }));
             }
@@ -81,22 +77,8 @@ const Canvas = () => {
                             scale(${zoom()})
                         `
                     }}
+                    ref={LiveCircuit.ref}
                 >
-                    <For each={LiveCircuit.gateIds.get()}>
-                        {id =>
-                            <Gate
-                                id={id}
-                                drag={drag}
-                                setDrag={setDrag}
-                            />
-                        }
-                    </For>
-
-                    <For each={LiveCircuit.wireIds.get()}>
-                        {id =>
-                            <Wire id={id}/>
-                        }
-                    </For>
                 </div>
             </div>
         </>

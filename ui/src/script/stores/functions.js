@@ -16,6 +16,14 @@ export class GateFunctions {
         });
     }
 
+    static determineIO(fn) {
+        const inCnt = fn.length;
+        const ins = new Array(inCnt).fill(0);
+        const outs = fn(ins);
+        const outCnt = Array.isArray(outs) ? outs.length : 1;
+        return [ inCnt, outCnt ];
+    }
+
     static validateFn(fn) {
         if (!fn) return null;
 

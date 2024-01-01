@@ -11,7 +11,7 @@ function App() {
   return (
     <div id="app-root">
       <Navbar/>
-      {LiveCircuit.gateIds.get() &&
+      {LiveCircuit.loaded.get() &&
         <>
           <Canvas/>
           <Tools/>
