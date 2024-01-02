@@ -2,7 +2,6 @@ import { getDoc, upsertDoc } from "../db/db_ops";
 import { pushNotif } from "./notifs";
 import { ezSignal, keyGen, pinY } from "../util";
 import { RecentCircuits } from "./circuits";
-import { createEffect } from "solid-js";
 import { JsRunner } from "../runners/js-runner";
 
 export class LiveGate {
@@ -22,20 +21,19 @@ export class LiveGate {
   }
 
   createElement() {
-    const ref = document.createElement('div');
-    this.ref = ref;
-
-    ref.addEventListener('click', this.click.bind(this));
-    ref.addEventListener('dblclick', this.doubleClick.bind(this));
-    ref.addEventListener('mousedown', this.mouseDown.bind(this));
-    ref.addEventListener('mouseup', _ => {});
-
-    ref.className = `
-      absolute cursor-grab bg-black text-white
-      flex justify-center items-center w-[100px] z-[1]
-    `;
-    ref.style.borderRadius = "5px 15px 15px 5px";
-
+    this.ref = (
+      <div
+        onClick={this.click.bind(this)}
+        onDblClick={this.doubleClick.bind(this)}
+        onMouseDown={this.mouseDown.bind(this)}
+        onMouseUp={_ => {}}
+        class="
+          absolute cursor-grab bg-black text-white
+          flex justify-center items-center w-[100px] z-[1]
+        "
+        style="border-radius: 5px 15px 15px 5px;"
+      />
+    );
     this.retype();
   }
 
@@ -101,9 +99,12 @@ export class LivePin {
   }
 
   createElement() {
-    this.ref = document.createElement('button');
-    this.ref.addEventListener('click', this.click.bind(this));
-    this.ref.className = "z-[2] absolute bg-[1px] bg-gray-500 rounded-[50%] w-[10px] h-[10px]";
+    this.ref = (
+      <button
+        class="z-[2] absolute bg-[1px] bg-gray-500 rounded-[50%] w-[10px] h-[10px]"
+        onClick={this.click.bind(this)}
+      />
+    );
   }
 
   click(e) {
@@ -165,23 +166,16 @@ export class LiveWire {
   }
 
   createElement() {
-    const ref = document.createElement('div');
-    this.ref = ref;
-
-    ref.addEventListener('click', this.click.bind(this));
-    ref.className = "flex items-center z-[2] cursor-pointer absolute";
-
-    const lineRef = document.createElement('div');
-    lineRef.className = "h-[2px] w-full";
-    const d1Ref = document.createElement('div');
-    d1Ref.className = "pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]";
-    const d2Ref = document.createElement('div');
-    d2Ref.className = "pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]";
-
-    ref.appendChild(d1Ref);
-    ref.appendChild(lineRef);
-    ref.appendChild(d2Ref);
-
+    this.ref = (
+      <div
+        onClick={this.click.bind(this)}
+        class="flex items-center z-[2] cursor-pointer absolute"
+      >
+        <div class="pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+        <div class="h-[2px] w-full"/>
+        <div class="pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+      </div>
+    );
     this.recolor();
   }
 
