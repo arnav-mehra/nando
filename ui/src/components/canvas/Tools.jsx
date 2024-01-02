@@ -12,10 +12,11 @@ const Tools = () => {
             <div
                 class="tools fixed right-0 bottom-0 p-4 gap-2 font-mono"
             >
-                <div>(P)lay/pause</div>
-                <div>(I)nfo</div>
-                <div>(S)ave</div>
-                <div>(D)elete</div>
+                <div>[I]nfo</div>
+                <div>[S]ave</div>
+                <div>[P]lay/pause</div>
+                <div>[E]dit</div>
+                <div>[D]elete</div>
             </div>
 
             <div class="tools fixed right-0 top-0 p-4 gap-2 flex">

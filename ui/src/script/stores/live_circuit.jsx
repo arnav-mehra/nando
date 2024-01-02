@@ -43,7 +43,7 @@ export class LiveGate {
   }
 
   doubleClick(e) {
-    LiveActions.openGateEditor(this.id, this.gate);
+    LiveActions.openGateEditor(this.id);
     e.stopPropagation();
   }
 
@@ -367,7 +367,8 @@ export class LiveActions {
   static editor = ezSignal();
   static drag = ezSignal();
 
-  static openGateEditor(id, gate) {
+  static openGateEditor(id) {
+    const gate = LiveCircuit.gates[id];
     LiveActions.editor.set({
       id,
       type: gate.type,
@@ -395,10 +396,10 @@ export class LiveActions {
   }
 
   static command(char) {
+    const sel = LiveActions.selection;
+
     switch (char) {
       case 'd': {
-        const sel = LiveActions.selection;
-        
         if (sel.includes("pin")) {
           pushNotif("To remove pins, please double click the gate.")
           return;
@@ -426,6 +427,11 @@ export class LiveActions {
       case 'i': { // info
         console.log(LiveCircuit.value);
         break;
+      }
+      case 'e': {
+        if (sel.includes("gate")) {
+          LiveActions.openGateEditor(sel);
+        }
       }
     }
   }
