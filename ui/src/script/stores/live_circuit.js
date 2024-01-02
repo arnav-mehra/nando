@@ -299,12 +299,14 @@ export class LiveCircuit {
 
   static addGate(type) {
     const [gid, _] = LiveCircuit.createGate(type);
-    new LiveGate(gid);
+    const lg = new LiveGate(gid);
+    lg.reposition();
   }
 
   static addWire(fromPin, toPin) {
     const [wid, _] = LiveCircuit.createWire(fromPin, toPin);
-    new LiveWire(wid);
+    const lw = new LiveWire(wid);
+    lw.reposition();
   }
 
   static addPins(gid, num) {
@@ -370,15 +372,6 @@ export class LiveActions {
   static selection;
   static editor = ezSignal();
   static drag = ezSignal();
-
-  static dragEffect = createEffect(_ => {
-    const d = LiveActions.drag.get();
-    if (d?.id) {
-      LiveCircuit.patchGate(d.id, {
-        position: d.position
-      });
-    }
-  });
 
   static openGateEditor(id, gate) {
     LiveActions.editor.set({

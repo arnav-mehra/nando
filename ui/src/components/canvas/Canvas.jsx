@@ -1,5 +1,6 @@
-import { For, createEffect, createSignal, onMount } from 'solid-js';
+import { createEffect, createSignal, onMount } from 'solid-js';
 import { LiveCircuit, LiveActions } from '../../script/stores/live_circuit';
+import { LiveGrid } from '../../script/stores/live_grid';
 
 const Canvas = () => {
     const [ mouseDown, setMouseDown ] = createSignal(false);
@@ -65,58 +66,24 @@ const Canvas = () => {
         }
     }
 
-    let gridPanels = {};
+    onMount(_ => {
+        const cv = document.getElementById("canvas");
+        cv.addEventListener("wheel", actions.wheelMove, { passive: true });
+    })
+    
+    createEffect(_ => {
+        const d = LiveActions.drag.get();
+        if (d?.id) {
+            LiveCircuit.patchGate(d.id, {
+                position: d.position
+            });
+        }
+    });
 
     createEffect(_ => {
         const [ left, top ] = transform.to_vc([ 0, 0 ]);
         const [ right, bot ] = transform.to_vc([ window.innerWidth, window.innerHeight ]);
-        const { floor, ceil } = Math;
-
-        const drawPanel = (sx, sy) => {
-            const el = (
-                <svg
-                    width="200px" height="200px" class="fixed"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{ left: `${sx}px`, top: `${sy + 5}px` }}
-                >
-                    <defs>
-                        <pattern id="sub-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
-                        </pattern>
-                        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                            <rect width="50" height="50" fill="url(#sub-grid)" stroke-width="0.5"/>
-                        </pattern>
-                    </defs>
-                    <rect width="200px" height="200px" fill="url(#grid)" />
-                </svg>
-            );
-            return el;
-        };
-
-        const newPanels = new Map();
-
-        for (let x = floor(left / 200); x <= ceil(right / 200); x++) {
-            for (let y = floor(top / 200); y <= ceil(bot / 200); y++) {
-                if (!newPanels[x]) newPanels[x] = new Map();
-
-                if (gridPanels[x] && gridPanels[x][y]) {
-                    newPanels[x][y] = gridPanels[x][y];
-                    delete gridPanels[x][y];
-                }
-                else {
-                    const el = drawPanel(200 * x, 200 * y);
-                    newPanels[x][y] = el;
-                    LiveCircuit.ref.appendChild(el);
-                }
-            }
-        }
-
-        Object.values(gridPanels).forEach(obj => {
-            Object.values(obj).forEach(el => {
-                el.remove();
-            });
-        });
-        gridPanels = newPanels;
+        LiveGrid.updatePanels(left, top, right, bot);
     });
 
     return (
@@ -128,7 +95,6 @@ const Canvas = () => {
                 onKeyPress={actions.keyPress}
                 onMouseDown={actions.mouseDown}
                 onMouseUp={actions.mouseUp}
-                onWheel={actions.wheelMove}
                 onMouseMove={actions.mouseMove}
             >
                 <div
