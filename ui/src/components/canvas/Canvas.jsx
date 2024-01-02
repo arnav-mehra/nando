@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onMount } from 'solid-js';
+import { For, createEffect, createSignal, onMount } from 'solid-js';
 import { LiveCircuit, LiveActions } from '../../script/stores/live_circuit';
 
 const Canvas = () => {
@@ -60,39 +60,10 @@ const Canvas = () => {
         wheelMove: e => {
             const d = e.deltaY;
             const nz = zoom() + (d / 1000);
-            const capped_nz = Math.max(Math.min(nz, 10), 0.5);
+            const capped_nz = Math.max(Math.min(nz, 5), 0.5);
             setZoom(capped_nz);
         }
     }
-
-    let offscreenCanvas;
-
-    onMount(_ => {
-        const el = document.createElement('canvas');
-        el.width = 200;
-        el.height = 200;
-
-        const ctx = el.getContext('2d');  
-
-        for (let dx = 0; dx <= 200; dx += 10) {
-            const ld = (dx / 10) % 5 == 1;
-            ctx.strokeStyle = ld ? '#dbeafe' : '#bfdbfe';
-            ctx.beginPath();
-            ctx.moveTo(dx, 0);
-            ctx.lineTo(dx, 200);
-            ctx.stroke();
-        }
-        for (let dy = 5; dy <= 200; dy += 10) {
-            const ld = ((dy - 5) / 10) % 5 == 1;
-            ctx.strokeStyle = ld ? '#dbeafe' : '#bfdbfe';
-            ctx.beginPath();
-            ctx.moveTo(0, dy);
-            ctx.lineTo(200, dy);
-            ctx.stroke();
-        }
-
-        offscreenCanvas = el;
-    });
 
     let gridPanels = {};
 
@@ -102,18 +73,23 @@ const Canvas = () => {
         const { floor, ceil } = Math;
 
         const drawPanel = (sx, sy) => {
-            const el = document.createElement('canvas');
-            el.className = "fixed z-0";
-            el.style.left = `${sx}px`;
-            el.style.top = `${sy}px`;
-            el.style.width = `200px`;
-            el.style.height = `200px`;
-            el.width = 200;
-            el.height = 200;
-
-            const ctx = el.getContext('2d');
-            ctx.drawImage(offscreenCanvas, 0, 0);
-
+            const el = (
+                <svg
+                    width="200px" height="200px" class="fixed"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ left: `${sx}px`, top: `${sy + 5}px` }}
+                >
+                    <defs>
+                        <pattern id="sub-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                        </pattern>
+                        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                            <rect width="50" height="50" fill="url(#sub-grid)" stroke-width="0.5"/>
+                        </pattern>
+                    </defs>
+                    <rect width="200px" height="200px" fill="url(#grid)" />
+                </svg>
+            );
             return el;
         };
 
