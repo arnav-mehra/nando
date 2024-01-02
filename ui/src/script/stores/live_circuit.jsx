@@ -400,6 +400,8 @@ export class LiveActions {
 
     switch (char) {
       case 'd': {
+        if (!sel) return;
+
         if (sel.includes("pin")) {
           pushNotif("To remove pins, please double click the gate.")
           return;
@@ -429,6 +431,8 @@ export class LiveActions {
         break;
       }
       case 'e': {
+        if (!sel) return;
+
         if (sel.includes("gate")) {
           LiveActions.openGateEditor(sel);
         }
