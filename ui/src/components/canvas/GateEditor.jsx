@@ -36,7 +36,7 @@ const GateEditor = () => {
                 const oldPins = oldGate[gateField].length;
                 const newPins = gateForm.get()[formField];
                 if (newPins > oldPins) {
-                    const addedPins = LiveCircuit.createPins(gid, newPins - oldPins);
+                    const addedPins = LiveCircuit.addPins(gid, newPins - oldPins);
                     upd[gateField] = [ ...oldGate[gateField], ...addedPins ];
                 }
                 else if (newPins < oldPins) {

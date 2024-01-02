@@ -9,7 +9,12 @@ export class LiveGate {
   constructor(id) {
     this.id = id;
     this.createElement();
+
+    this.gate.inPins.forEach(pid => new LivePin(pid));
+    this.gate.outPins.forEach(pid => new LivePin(pid));
+
     LiveCircuit.objMap[id] = this;
+    LiveCircuit.ref.appendChild(this.ref);
   }
 
   get gate() {
@@ -17,8 +22,6 @@ export class LiveGate {
   }
 
   createElement() {
-    // create self.
-
     const ref = document.createElement('div');
     this.ref = ref;
 
@@ -33,12 +36,7 @@ export class LiveGate {
     `;
     ref.style.borderRadius = "5px 15px 15px 5px";
 
-    this.position();
-    this.type();
-    this.pin('inPins');
-    this.pin('outPins');
-
-    return ref;
+    this.retype();
   }
 
   click(e) {
@@ -70,42 +68,13 @@ export class LiveGate {
     return 25 * Math.max(inPinCnt, outPinCnt);
   }
 
-  position() {
+  reposition() {
     const height = this.getHeight();
     const [ x, y ] = this.gate.position;
     this.ref.style.left = `${x - 100 / 2}px`;
-    this.ref.style.top = `${y - height / 2}px`;
-  }
-
-  type() {
-    this.ref.textContent = this.gate.type;
-  }
-
-  pin(field) {
-    const x = field === 'inPins' ? -50 : 50;
-
-    this.gate[field].forEach((pid, i) => {
-      const n = this.gate[field].length;
-      let p = LiveCircuit.objMap[pid];
-
-      if (p) {
-        p.position(x, i, n);
-      }
-      else {
-        p = new LivePin(pid);
-        p.position(x, i, n);
-        LiveCircuit.ref.appendChild(p.ref);
-      }
-    });
-
-    const height = this.getHeight();
-    const [ _, y ] = this.gate.position;  
     this.ref.style.height = `${height}px`;
     this.ref.style.top = `${y - height / 2}px`;
-  }
 
-  reposition() {
-    this.position();
     this.gate.inPins.forEach((pid, i) => {
       LiveCircuit.objMap[pid].reposition(-50, i, this.gate.inPins.length);
     });
@@ -115,17 +84,7 @@ export class LiveGate {
   }
 
   retype() {
-    this.type();
-  }
-
-  repin(field) {
-    this.pin(field);
-    this.gate.inPins.forEach((pid, i) => {
-      LiveCircuit.objMap[pid].reposition(-50, i, this.gate.inPins.length);
-    });
-    this.gate.outPins.forEach((pid, i) => {
-      LiveCircuit.objMap[pid].reposition(50, i, this.gate.outPins.length);
-    });
+    this.ref.textContent = this.gate.type;
   }
 };
 
@@ -134,6 +93,7 @@ export class LivePin {
     this.id = id;
     this.createElement();
     LiveCircuit.objMap[id] = this;
+    LiveCircuit.ref.appendChild(this.ref);
   }
 
   get pin() {
@@ -141,13 +101,9 @@ export class LivePin {
   }
 
   createElement() {
-    const ref = document.createElement('button');
-    this.ref = ref;
-
-    ref.addEventListener('click', this.click.bind(this));
-
-    ref.className = "z-[2] absolute bg-[1px] bg-gray-500 rounded-[50%] w-[10px] h-[10px]";
-    return ref;
+    this.ref = document.createElement('button');
+    this.ref.addEventListener('click', this.click.bind(this));
+    this.ref.className = "z-[2] absolute bg-[1px] bg-gray-500 rounded-[50%] w-[10px] h-[10px]";
   }
 
   click(e) {
@@ -183,16 +139,13 @@ export class LivePin {
     }
   }
 
-  position(x, i, n) {
+  reposition(x, i, n) {
     const [ gx, gy ] = LiveCircuit.gates[this.pin.gate].position;
     this.x = gx + x;
     this.y = gy + pinY(n, i);
     this.ref.style.left = `${this.x - 5}px`;
     this.ref.style.top = `${this.y - 5}px`;
-  }
 
-  reposition(x, i, n) {
-    this.position(x, i, n);
     this.pin.wires.forEach(wid => {
       LiveCircuit.objMap[wid].reposition();
     });
@@ -204,6 +157,7 @@ export class LiveWire {
     this.id = id;
     this.createElement();
     LiveCircuit.objMap[id] = this;
+    LiveCircuit.ref.appendChild(this.ref);
   }
 
   get wire() {
@@ -228,23 +182,12 @@ export class LiveWire {
     ref.appendChild(lineRef);
     ref.appendChild(d2Ref);
 
-    this.color();
-    this.position();
-
-    return ref;
+    this.recolor();
   }
 
   click(e) {
     e.stopPropagation();
     LiveActions.selectObject(this.id);
-  }
-
-  position() {
-    this.reposition();
-  }
-
-  color() {
-    this.recolor();
   }
 
   reposition() {
@@ -299,10 +242,9 @@ export class LiveCircuit {
     const wireIds = Object.keys(doc.data.wires);
     
     const lgs = gateIds.map(gid => new LiveGate(gid));
-    const lws = wireIds.map(wid => new LiveWire(wid));
-    
-    lws.forEach(lw => this.ref.appendChild(lw.ref));
-    lgs.forEach(lg => this.ref.appendChild(lg.ref));
+    wireIds.forEach(wid => new LiveWire(wid));
+
+    lgs.forEach(lg => lg.reposition());
 
     pushNotif("Loaded circuit " + LiveCircuit.value.name + "!");
   }
@@ -357,14 +299,18 @@ export class LiveCircuit {
 
   static addGate(type) {
     const [gid, _] = LiveCircuit.createGate(type);
-    const gateObj = new LiveGate(gid);
-    this.ref.appendChild(gateObj.ref);
+    new LiveGate(gid);
   }
 
   static addWire(fromPin, toPin) {
     const [wid, _] = LiveCircuit.createWire(fromPin, toPin);
-    const wireObj = new LiveWire(wid);
-    this.ref.appendChild(wireObj.ref);
+    new LiveWire(wid);
+  }
+
+  static addPins(gid, num) {
+    const pins = this.createPins(gid, num);
+    pins.forEach(pid => new LivePin(pid));
+    return pins;
   }
 
   // DELETE
@@ -409,10 +355,8 @@ export class LiveCircuit {
     LiveCircuit.gates[id] = { ...curr, ...patch };
 
     const obj = LiveCircuit.objMap[id];
-    if (patch.position) obj.reposition();
+    if (patch.position || patch.inPins || patch.outPins) obj.reposition();
     if (patch.type) obj.retype();
-    if (patch.inPins) obj.repin("inPins");
-    if (patch.outPins) obj.repin("outPins");
   }
 
   static patchWire(id, patch) {
@@ -483,7 +427,7 @@ export class LiveActions {
         }
       }
       case 'p': { // play/pause
-        JsRunner.init();
+        JsRunner.playPause();
         // console.log(init_wasm(LiveCircuit.value.data.gates))
         // console.log(feed_wasm(LiveCircuit.value.data.wires))
         break;
