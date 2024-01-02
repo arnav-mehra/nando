@@ -1,4 +1,5 @@
 import { deleteDoc, getAllDocs, upsertDoc } from "../db/db_ops";
+import { JsRunner } from "../runners/js-runner";
 import { ezSignal } from "../util";
 import { pushNotif } from "./notifs";
 
@@ -37,12 +38,19 @@ export class GateFunctions {
         if (typeof fn_var !== 'function') {
             return null;
         }
+
         return fn_var;
     }
 
     static genTT(fn) {
         const n = fn.length;
-        if (n > 8) return null; // just give up. :(
+        if (n > 8) {
+            pushNotif("Too many inputs to generate truth table.");
+            return null; // just give up. :(
+        }
+        if (n == 0) {
+            return [];
+        }
 
         const res = [];
         for (let i = 0; i < (1 << n); i++) {

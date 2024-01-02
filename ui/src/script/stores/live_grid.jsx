@@ -30,7 +30,7 @@ export class LiveGrid {
         const newPanels = new Map();
 
         for (let x = floor(left / PANEL_SIZE); x <= ceil(right / PANEL_SIZE); x++) {
-            for (let y = floor(top / PANEL_SIZE); y <= ceil(bot / PANEL_SIZE); y++) {
+            for (let y = floor((top - 5) / PANEL_SIZE); y <= ceil(bot / PANEL_SIZE); y++) {
                 if (!newPanels[x]) newPanels[x] = new Map();
 
                 if (LiveGrid.panels[x] && LiveGrid.panels[x][y]) {

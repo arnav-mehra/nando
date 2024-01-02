@@ -12,6 +12,7 @@ import { ezSignal } from "../util";
 export class JsRunner {
     static play = ezSignal(false);
     static interval = null;
+    static tick = 0;
 
     static playPause() {
         JsRunner.play.set(p => !p);
@@ -53,6 +54,7 @@ export class JsRunner {
 
         JsRunner.interval = setInterval(_ => {
             JsRunner.iter(comp);
+            JsRunner.tick++;
         }, 1000);
 
         // const ti = Date.now();
@@ -64,6 +66,8 @@ export class JsRunner {
     }
 
     static iter(comp) {
+        
+
         for (const [inC, fnC, outC] of comp) {
             const ins = [];
             for (const wires of inC) {
