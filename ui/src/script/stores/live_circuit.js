@@ -3,6 +3,7 @@ import { pushNotif } from "./notifs";
 import { ezSignal, keyGen, pinY } from "../util";
 import { RecentCircuits } from "./circuits";
 import { createEffect } from "solid-js";
+import { JsRunner } from "../runners/js-runner";
 
 export class LiveGate {
   constructor(id) {
@@ -28,7 +29,7 @@ export class LiveGate {
 
     ref.className = `
       absolute cursor-grab bg-black text-white
-      flex justify-center items-center w-[100px]
+      flex justify-center items-center w-[100px] z-[1]
     `;
     ref.style.borderRadius = "5px 15px 15px 5px";
 
@@ -72,7 +73,6 @@ export class LiveGate {
   position() {
     const height = this.getHeight();
     const [ x, y ] = this.gate.position;
-    this.ref.style.height = `${height}px`;
     this.ref.style.left = `${x - 100 / 2}px`;
     this.ref.style.top = `${y - height / 2}px`;
   }
@@ -87,7 +87,6 @@ export class LiveGate {
     this.gate[field].forEach((pid, i) => {
       const n = this.gate[field].length;
       let p = LiveCircuit.objMap[pid];
-      console.log(p)
 
       if (p) {
         p.position(x, i, n);
@@ -98,6 +97,11 @@ export class LiveGate {
         LiveCircuit.ref.appendChild(p.ref);
       }
     });
+
+    const height = this.getHeight();
+    const [ _, y ] = this.gate.position;  
+    this.ref.style.height = `${height}px`;
+    this.ref.style.top = `${y - height / 2}px`;
   }
 
   reposition() {
@@ -216,9 +220,9 @@ export class LiveWire {
     const lineRef = document.createElement('div');
     lineRef.className = "h-[2px] w-full";
     const d1Ref = document.createElement('div');
-    d1Ref.className = "pointer-events-none min-w-[6px] w-[6px] h-[6px] bg-orange-400 rounded-[3px]";
+    d1Ref.className = "pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]";
     const d2Ref = document.createElement('div');
-    d2Ref.className = "pointer-events-none min-w-[6px] w-[6px] h-[6px] bg-orange-400 rounded-[3px]";
+    d2Ref.className = "pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]";
 
     ref.appendChild(d1Ref);
     ref.appendChild(lineRef);
@@ -252,10 +256,10 @@ export class LiveWire {
 
     const dx = toPos[0] - fromPos[0];
     const dy = toPos[1] - fromPos[1];
-    const d = Math.sqrt(dx * dx + dy * dy) + 6;
+    const d = Math.sqrt(dx * dx + dy * dy) + 5;
     const a = Math.atan(dy / dx);
     const left = (toPos[0] + fromPos[0]) / 2 - d / 2;
-    const top = (toPos[1] + fromPos[1]) / 2 - 3;
+    const top = (toPos[1] + fromPos[1]) / 2 - 2.5;
 
     this.ref.style.transform = `rotate(${a}rad)`;
     this.ref.style.left = `${left}px`;
@@ -265,7 +269,7 @@ export class LiveWire {
 
   recolor() {
     const v = this.wire.value;
-    const col = v ? "red" : "gray";
+    const col = v ? "#e11d48" : "black";
     this.ref.children[1].style.backgroundColor = col;
   }
 };
@@ -288,7 +292,8 @@ export class LiveCircuit {
     LiveCircuit.value = doc;
     LiveCircuit.loaded.set(true);
 
-    this.ref.replaceChildren();
+    Object.values(LiveCircuit.objMap).forEach(o => o.ref.remove());
+    LiveCircuit.objMap = {};
 
     const gateIds = Object.keys(doc.data.gates);
     const wireIds = Object.keys(doc.data.wires);
@@ -467,7 +472,7 @@ export class LiveActions {
           pushNotif("To remove pins, please double click the gate.")
           return;
         }
-        
+
         if (sel.includes("gate")) {
           LiveActions.selection = null;
           LiveCircuit.deleteGate(sel);
@@ -478,6 +483,7 @@ export class LiveActions {
         }
       }
       case 'p': { // play/pause
+        JsRunner.init();
         // console.log(init_wasm(LiveCircuit.value.data.gates))
         // console.log(feed_wasm(LiveCircuit.value.data.wires))
         break;

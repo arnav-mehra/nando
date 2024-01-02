@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal, onMount } from 'solid-js';
 import { LiveCircuit, LiveActions } from '../../script/stores/live_circuit';
 
 const Canvas = () => {
@@ -40,9 +40,16 @@ const Canvas = () => {
         mouseMove: e => {
             if (LiveActions.drag.get()) {
                 const coords = [ e.pageX, e.pageY ];
-                LiveActions.drag.set(d => ({
-                    ...d, position: transform.to_vc(coords)
-                }));
+                const [ raw_x, raw_y ] = transform.to_vc(coords);
+                const rnd = v => Math.round(v / 10) * 10;
+                const [ x, y ] = [ rnd(raw_x), rnd(raw_y) ];
+                const [ cx, cy ] = LiveActions.drag.get()?.position;
+
+                if (x != cx || y != cy) {
+                    LiveActions.drag.set(d => ({
+                        ...d, position: [ x, y ]
+                    }));
+                }
             }
             if (mouseDown()) {
                 const [ x, y ] = center();
@@ -53,9 +60,88 @@ const Canvas = () => {
         wheelMove: e => {
             const d = e.deltaY;
             const nz = zoom() + (d / 1000);
-            setZoom(nz);
+            const capped_nz = Math.max(Math.min(nz, 10), 0.5);
+            setZoom(capped_nz);
         }
     }
+
+    let offscreenCanvas;
+
+    onMount(_ => {
+        const el = document.createElement('canvas');
+        el.width = 200;
+        el.height = 200;
+
+        const ctx = el.getContext('2d');  
+
+        for (let dx = 0; dx <= 200; dx += 10) {
+            const ld = (dx / 10) % 5 == 1;
+            ctx.strokeStyle = ld ? '#dbeafe' : '#bfdbfe';
+            ctx.beginPath();
+            ctx.moveTo(dx, 0);
+            ctx.lineTo(dx, 200);
+            ctx.stroke();
+        }
+        for (let dy = 5; dy <= 200; dy += 10) {
+            const ld = ((dy - 5) / 10) % 5 == 1;
+            ctx.strokeStyle = ld ? '#dbeafe' : '#bfdbfe';
+            ctx.beginPath();
+            ctx.moveTo(0, dy);
+            ctx.lineTo(200, dy);
+            ctx.stroke();
+        }
+
+        offscreenCanvas = el;
+    });
+
+    let gridPanels = {};
+
+    createEffect(_ => {
+        const [ left, top ] = transform.to_vc([ 0, 0 ]);
+        const [ right, bot ] = transform.to_vc([ window.innerWidth, window.innerHeight ]);
+        const { floor, ceil } = Math;
+
+        const drawPanel = (sx, sy) => {
+            const el = document.createElement('canvas');
+            el.className = "fixed z-0";
+            el.style.left = `${sx}px`;
+            el.style.top = `${sy}px`;
+            el.style.width = `200px`;
+            el.style.height = `200px`;
+            el.width = 200;
+            el.height = 200;
+
+            const ctx = el.getContext('2d');
+            ctx.drawImage(offscreenCanvas, 0, 0);
+
+            return el;
+        };
+
+        const newPanels = new Map();
+
+        for (let x = floor(left / 200); x <= ceil(right / 200); x++) {
+            for (let y = floor(top / 200); y <= ceil(bot / 200); y++) {
+                if (!newPanels[x]) newPanels[x] = new Map();
+
+                if (gridPanels[x] && gridPanels[x][y]) {
+                    newPanels[x][y] = gridPanels[x][y];
+                    delete gridPanels[x][y];
+                }
+                else {
+                    const el = drawPanel(200 * x, 200 * y);
+                    newPanels[x][y] = el;
+                    LiveCircuit.ref.appendChild(el);
+                }
+            }
+        }
+
+        Object.values(gridPanels).forEach(obj => {
+            Object.values(obj).forEach(el => {
+                el.remove();
+            });
+        });
+        gridPanels = newPanels;
+    });
 
     return (
         <>
