@@ -5,16 +5,69 @@ import { pushNotif } from "./notifs";
 
 export class GateFunctions {  
     static visible = ezSignal(false);
-    static list = ezSignal();
+    static list = ezSignal([]);
     static fnMap = {};
 
     static async load() {
         const docs = await getAllDocs("functions");
 
-        GateFunctions.list.set(docs);
-        docs.forEach(({ name, fn }) => {
-            GateFunctions.fnMap[name] = eval(fn);
+        docs.forEach(({ name, fn: fn_str }) => {
+            const fn = eval(fn_str);
+            const [ ins, outs ] = GateFunctions.determineIO(fn);
+            GateFunctions.fnMap[name] = { fn, ins, outs };
         });
+        GateFunctions.list.set(docs);
+    }
+
+    static async add(name, fn_str) {
+        // validate name
+        name = name.toUpperCase();
+        if (name.length == 0 || name in GateFunctions.fnMap) {
+            pushNotif("Error: Please enter a non-empty, unique name.");
+            return;
+        }
+
+        // validate function
+        const fn = GateFunctions.validateFn(fn_str);
+        if (!fn) {
+            pushNotif("Error: Invalid JS function.");
+            return;
+        }
+
+        const doc = { name, fn: fn_str };
+        await upsertDoc("functions", doc);
+
+        const [ ins, outs ] = this.determineIO(fn_var);
+        GateFunctions.fnMap[name] = { fn, ins, outs };
+        GateFunctions.list.set(ls => [ ...ls, doc ]);
+    }
+
+    static async update(name, fn_str) {
+        const fn = GateFunctions.validateFn(fn_str);
+        if (!fn) {
+            pushNotif("Error: Invalid JS function.");
+            return;
+        }
+
+        const doc = { name, fn: fn_str };
+        await upsertDoc("functions", doc);
+
+        const [ ins, outs ] = this.determineIO(fn);
+        GateFunctions.fnMap[name] = { fn, ins, outs };
+        GateFunctions.list.set(ls =>
+            ls.map(x => x.name === name ? doc : x)
+        );
+
+        pushNotif("Your function has been modified.")
+    }
+
+    static async remove(name) {
+        await deleteDoc("functions", name);
+
+        GateFunctions.list.set(ls => (
+            ls.filter(d => d.name !== name)
+        ));
+        delete GateFunctions.fnMap[name];
     }
 
     static determineIO(fn) {
@@ -25,21 +78,38 @@ export class GateFunctions {
         return [ inCnt, outCnt ];
     }
 
-    static validateFn(fn) {
-        if (!fn) return null;
-
+    static validateFn(fn_str) {
+        if (!fn_str) return null;
+        let fn;
         try {
-            var fn_var = eval(fn);
+            fn = eval(fn_str);
+            GateFunctions.determineIO(fn);
         } catch (err) {
             console.log(err);
             return null;
         }
-
-        if (typeof fn_var !== 'function') {
+        if (typeof fn !== 'function') {
             return null;
         }
+        return fn;
+    }
 
-        return fn_var;
+    static validateFnFull(fn_str) {
+        try {
+            const fn = GateFunctions.validateFn(fn_str);
+            const [ _, outs ] = GateFunctions.determineIO(fn);
+            const tt = GateFunctions.genTT(fn);
+            for (const { _, outputs } of tt) {
+                if (outs.length !== outputs.length) {
+                    console.error("Outputs do not match length.");
+                    return null;
+                }
+            }
+            return fn;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
     }
 
     static genTT(fn) {
@@ -61,52 +131,6 @@ export class GateFunctions {
             res.push({ input, output });
         }
         return res;
-    }
-
-    static async add(name, fn) {
-        // validate name
-        name = name.toUpperCase();
-        if (name.length == 0 || name in GateFunctions.fnMap) {
-            pushNotif("Error: Please enter a non-empty, unique name.");
-            return;
-        }
-
-        // validate function
-        const fn_var = GateFunctions.validateFn(fn);
-        if (!fn_var) {
-            pushNotif("Error: Invalid JS function.");
-            return;
-        }
-
-        // add
-        const doc = { fn, name }
-        await upsertDoc("functions", doc);
-        GateFunctions.fnMap[name] = fn_var;
-        GateFunctions.list.set(ls => [ ...ls, doc ]);
-    }
-
-    static async update(name, fn) {
-        const fn_var = GateFunctions.validateFn(fn);
-        if (!fn_var) {
-            pushNotif("Error: Invalid JS function.");
-            return;
-        }
-
-        const doc = { name, fn };
-        await upsertDoc("functions", doc);
-        GateFunctions.fnMap[name] = fn_var;
-        GateFunctions.list.set(ls => (
-            ls.map(x => x.name === name ? doc : x)
-        ));
-    }
-
-    static async remove(name) {
-        await deleteDoc("functions", name);
-
-        delete GateFunctions.fnMap[name];
-        GateFunctions.list.set(ls => (
-            ls.filter(d => d.name !== name)
-        ));
     }
 }
 

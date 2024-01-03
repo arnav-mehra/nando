@@ -167,13 +167,13 @@ export class LiveWire {
 
   createElement() {
     this.ref = (
-      <div
-        onClick={this.click.bind(this)}
-        class="flex items-center z-[2] cursor-pointer absolute"
-      >
-        <div class="pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
-        <div class="h-[2px] w-full"/>
-        <div class="pointer-events-none min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+      <div class="flex items-center z-[2] cursor-pointer absolute">
+        <div class="min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+        <div
+          class="h-[2px] w-full"
+          onClick={this.click.bind(this)}
+        />
+        <div class="min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
       </div>
     );
     this.recolor();
@@ -213,6 +213,8 @@ export class LiveWire {
 
 export class LiveCircuit {
   static loaded = ezSignal(false);
+  static gates_created = 0;
+
   static value = null;
 
   static ref = null;
@@ -265,13 +267,15 @@ export class LiveCircuit {
 
   static createGate() {
     const key = 'gate/' + keyGen();
+    const shift = LiveCircuit.gates_created * 60;
     const gate = {
       type: 'NAND',
-      position: [200, 200],
+      position: [200, 200 + shift],
       inPins: LiveCircuit.createPins(key, 2),
       outPins: LiveCircuit.createPins(key, 1)
     };
 
+    LiveCircuit.gates_created++;
     LiveCircuit.gates[key] = gate;
     return [key, gate];
   }
@@ -295,12 +299,14 @@ export class LiveCircuit {
     const [gid, _] = LiveCircuit.createGate(type);
     const lg = new LiveGate(gid);
     lg.reposition();
+    LiveActions.selectObject(gid);
   }
 
   static addWire(fromPin, toPin) {
     const [wid, _] = LiveCircuit.createWire(fromPin, toPin);
     const lw = new LiveWire(wid);
     lw.reposition();
+    LiveActions.selectObject(wid);
   }
 
   static addPins(gid, num) {

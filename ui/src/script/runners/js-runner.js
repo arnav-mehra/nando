@@ -41,7 +41,7 @@ export class JsRunner {
             const ins = inPins.map(pin => 
                 pin.wires.map(wid => wires[wid])
             );
-            const fn = GateFunctions.fnMap[g.type];
+            const fn = GateFunctions.fnMap[g.type].fn;
             const [ _, outCnt ] = GateFunctions.determineIO(fn);
             const ffn = outCnt == 1 ? x => [ fn(x) ] : fn;
 
