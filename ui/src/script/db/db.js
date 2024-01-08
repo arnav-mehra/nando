@@ -2,13 +2,25 @@ import { upsertDoc } from "./db_ops";
 
 const DB_NAME = "nando";
 const COLLECTION_NAMES = ["circuits", "functions"];
+
 const INIT_FUNCTIONS = [
+    { name: "PROBE", fn: "a => []" },
+    { name: "VCC", fn: "() => 1" },
+    { name: "GND", fn: "() => 0" },
+    { name: "CLK", fn: "() => JsRunner.tick % 4 == 0 ? 1 : 0" },
+
     { name: "NAND", fn: "(a, b) => 1 - (a & b)" },
     { name: "AND",  fn: "(a, b) => a & b" },
     { name: "NOR", fn: "(a, b) => 1 - (a | b)" },
     { name: "OR", fn: "(a, b) => a | b" },
     { name: "NOT", fn: "a => 1 - a" },
-    { name: "XOR", fn: "(a, b) => a ^ b" }
+    { name: "XOR", fn: "(a, b) => a ^ b" },
+
+    { name: "ADD", fn: "(a, b) => a + b" },
+    { name: "SUB", fn: "(a, b) => a + b" },
+    { name: "MULT", fn: "(a, b) => a + b" },
+    { name: "DIV", fn: "(a, b) => a / b" },
+    { name: "MOD", fn: "(a, b) => a % b" },
 ];
 
 let db;
