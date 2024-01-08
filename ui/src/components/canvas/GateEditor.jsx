@@ -9,13 +9,11 @@ const GateEditor = () => {
     const inLock = createMemo(() => {
         const type = gateForm.get().type;
         const { ins, _ } = GateFunctions.fnMap[type];
-        console.log(ins !== null)
         return ins !== null;
     });
     const outLock = createMemo(() => {
         const type = gateForm.get().type;
         const { _, outs } = GateFunctions.fnMap[type];
-        console.log(outs !== null)
         return outs !== null;
     });
 

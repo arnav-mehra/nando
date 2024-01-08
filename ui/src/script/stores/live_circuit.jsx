@@ -189,8 +189,13 @@ export class LiveWire {
         class="flex items-center z-[2] cursor-pointer absolute"
         onClick={this.click.bind(this)}
       >
+        {/* left dot */}
         <div class="max-w-[5px] min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+        {/* wire line */}
         <div class="h-[2px] w-full"/>
+        {/* value label */}
+        <div class="absolute left-[50%] top-[-20px] translate-x-[-50%] pointer-events-none"/>
+        {/* right dot */}
         <div class="max-w-[5px] min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
       </div>
     );
@@ -226,6 +231,7 @@ export class LiveWire {
     const v = this.wire.value;
     const col = v ? "#e11d48" : "#1f2937";
     this.ref.children[1].style.backgroundColor = col;
+    this.ref.children[2].textContent = v;
   }
 
   select() {
@@ -414,6 +420,10 @@ export class LiveActions {
   }
 
   static selectObject(id) {
+    if (!LiveCircuit.objMap[id]) return;
+
+    JsRunner.stop();
+
     const oid = LiveActions.selection;
     if (oid) {
       LiveCircuit.objMap[oid].unselect();
@@ -450,8 +460,6 @@ export class LiveActions {
       }
       case 'p': { // play/pause
         JsRunner.playPause();
-        // console.log(init_wasm(LiveCircuit.value.data.gates))
-        // console.log(feed_wasm(LiveCircuit.value.data.wires))
         break;
       }
       case 's': { // save

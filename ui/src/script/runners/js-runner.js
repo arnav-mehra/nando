@@ -1,5 +1,5 @@
 import { GateFunctions } from "../stores/functions";
-import { LiveCircuit } from "../stores/live_circuit";
+import { LiveActions, LiveCircuit } from "../stores/live_circuit";
 import { ezSignal } from "../util";
 
 // Perf Log:
@@ -15,21 +15,24 @@ export class JsRunner {
     static tick = 0;
 
     static playPause() {
-        JsRunner.play.set(p => !p);
-
         if (JsRunner.play.get()) {
-            JsRunner.run();
-        } else {
             JsRunner.stop();
+        } else {
+            JsRunner.run();
         }
     }
 
     static stop() {
+        JsRunner.play.set(false);
+        
         clearInterval(JsRunner.interval);
         JsRunner.interval = null;
     }
 
     static run() {
+        JsRunner.play.set(true);
+        LiveActions.selectObject(LiveActions.selection);
+
         const data = LiveCircuit.value.data;
         const { gates, wires, pins } = data;
         const gateList = Object.values(gates);
@@ -43,7 +46,7 @@ export class JsRunner {
             );
             const fn = GateFunctions.fnMap[g.type].fn;
             const [ _, outCnt ] = GateFunctions.determineIO(fn);
-            const ffn = outCnt == 1 ? x => [ fn(x) ] : fn;
+            const ffn = outCnt == 1 ? (...x) => [ fn(...x) ] : fn;
 
             const outs = outPins.map(pin =>
                 pin.wires.map(wid => LiveCircuit.objMap[wid])
@@ -66,9 +69,9 @@ export class JsRunner {
     }
 
     static iter(comp) {
-        
+        const mods = [];
 
-        for (const [inC, fnC, outC] of comp) {
+        for (const [ inC, fnC, outC ] of comp) {
             const ins = [];
             for (const wires of inC) {
                 let r = 0;
@@ -78,15 +81,19 @@ export class JsRunner {
                 ins.push(r);
             }
             const outs = fnC(...ins);
-            
+
             const l = outC.length;
             for (let i = 0; i < l; i++) {
                 const v = outs[i];
                 for (const lw of outC[i]) {
-                    lw.wire.value = v;
-                    lw.recolor();
+                    mods.push([ lw, v ]);
                 }
             }
+        }
+
+        for (const [ lw, v ] of mods) {
+            lw.wire.value = v;
+            lw.recolor();
         }
     }
 };
