@@ -224,7 +224,7 @@ export class LiveWire {
 
   recolor() {
     const v = this.wire.value;
-    const col = v ? "#e11d48" : "black";
+    const col = v ? "#e11d48" : "#1f2937";
     this.ref.children[1].style.backgroundColor = col;
   }
 
