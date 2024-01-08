@@ -59,10 +59,19 @@ const Canvas = () => {
             }
         },
         wheelMove: e => {
+            const origin = [ e.pageX, e.pageY ];
+            const vorigin = transform.to_vc(origin);
+            
             const d = e.deltaY;
-            const nz = zoom() + (d / 1000);
+            const nz = zoom() - (d / 1000);
             const capped_nz = Math.max(Math.min(nz, 5), 0.5);
             setZoom(capped_nz);
+            
+            const neworigin = transform.from_vc(vorigin);
+            setCenter(c => [
+                c[0] + origin[0] - neworigin[0],
+                c[1] + origin[1] - neworigin[1]
+            ]);
         }
     }
 

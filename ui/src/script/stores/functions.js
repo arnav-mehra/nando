@@ -37,7 +37,7 @@ export class GateFunctions {
         const doc = { name, fn: fn_str };
         await upsertDoc("functions", doc);
 
-        const [ ins, outs ] = this.determineIO(fn_var);
+        const [ ins, outs ] = this.determineIO(fn);
         GateFunctions.fnMap[name] = { fn, ins, outs };
         GateFunctions.list.set(ls => [ ...ls, doc ]);
     }

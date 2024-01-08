@@ -22,13 +22,13 @@ export class LiveGate {
 
   createElement() {
     this.ref = (
-      <div
+      <button
         onClick={this.click.bind(this)}
         onDblClick={this.doubleClick.bind(this)}
         onMouseDown={this.mouseDown.bind(this)}
         onMouseUp={_ => {}}
         class="
-          absolute cursor-grab bg-black text-white
+          absolute bg-black text-white
           flex justify-center items-center w-[100px] z-[1]
         "
         style="border-radius: 5px 15px 15px 5px;"
@@ -84,6 +84,14 @@ export class LiveGate {
   retype() {
     this.ref.textContent = this.gate.type;
   }
+
+  select() {
+    this.ref.style.outline = "2px solid white";
+  }
+
+  unselect() {
+    this.ref.style.outline = "none";
+  }
 };
 
 export class LivePin {
@@ -101,9 +109,11 @@ export class LivePin {
   createElement() {
     this.ref = (
       <button
-        class="z-[2] absolute bg-[1px] bg-gray-500 rounded-[50%] w-[10px] h-[10px]"
+        class="z-[2] absolute rounded-[50%]"
         onClick={this.click.bind(this)}
-      />
+      >
+        <div class="bg-gray-500 rounded-[50%] w-[10px] h-[10px] m-[2px]"/>
+      </button>
     );
   }
 
@@ -121,8 +131,8 @@ export class LivePin {
 
     // pin -> pin.
     LiveActions.selection = null;
-    LiveCircuit.objMap[newId].ref.style.outline = "none";
-    LiveCircuit.objMap[selId].ref.style.outline = "none";
+    LiveCircuit.objMap[newId].unselect();
+    LiveCircuit.objMap[selId].unselect();
 
     // from/to pin -> from/to pin
     const selIsFrom = LiveCircuit.gates[LiveCircuit.pins[selId].gate].outPins.includes(selId);
@@ -144,12 +154,20 @@ export class LivePin {
     const [ gx, gy ] = LiveCircuit.gates[this.pin.gate].position;
     this.x = gx + x;
     this.y = gy + pinY(n, i);
-    this.ref.style.left = `${this.x - 5}px`;
-    this.ref.style.top = `${this.y - 5}px`;
+    this.ref.style.left = `${this.x - 7}px`;
+    this.ref.style.top = `${this.y - 7}px`;
 
     this.pin.wires.forEach(wid => {
       LiveCircuit.objMap[wid].reposition();
     });
+  }
+
+  select() {
+    this.ref.children[0].style.outline = "2px solid white";
+  }
+
+  unselect() {
+    this.ref.children[0].style.outline = "none";
   }
 };
 
@@ -167,13 +185,13 @@ export class LiveWire {
 
   createElement() {
     this.ref = (
-      <div class="flex items-center z-[2] cursor-pointer absolute">
-        <div class="min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
-        <div
-          class="h-[2px] w-full"
-          onClick={this.click.bind(this)}
-        />
-        <div class="min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+      <div
+        class="flex items-center z-[2] cursor-pointer absolute"
+        onClick={this.click.bind(this)}
+      >
+        <div class="max-w-[5px] min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
+        <div class="h-[2px] w-full"/>
+        <div class="max-w-[5px] min-w-[5px] w-[5px] h-[5px] bg-orange-400 rounded-[2.5px]"/>
       </div>
     );
     this.recolor();
@@ -208,6 +226,14 @@ export class LiveWire {
     const v = this.wire.value;
     const col = v ? "#e11d48" : "black";
     this.ref.children[1].style.backgroundColor = col;
+  }
+
+  select() {
+    this.ref.style.outline = "2px solid white";
+  }
+
+  unselect() {
+    this.ref.style.outline = "none";
   }
 };
 
@@ -390,14 +416,14 @@ export class LiveActions {
   static selectObject(id) {
     const oid = LiveActions.selection;
     if (oid) {
-      LiveCircuit.objMap[oid].ref.style.outline = "none";
+      LiveCircuit.objMap[oid].unselect();
     }
 
     if (oid === id) {
       LiveActions.selection = null;
     } else {
       LiveActions.selection = id;
-      LiveCircuit.objMap[id].ref.style.outline = "2px solid white";
+      LiveCircuit.objMap[id].select();
     }
   }
 
